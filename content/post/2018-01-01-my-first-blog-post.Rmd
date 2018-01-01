@@ -12,6 +12,6 @@ tags: []
 >
 > --- Ken Robinson in a [Ted Talk](https://www.ted.com/talks/ken_robinson_says_schools_kill_creativity?referrer=playlist-the_most_popular_talks_of_all#t-1139482)
 
-Starting this blog as new year resolution!!!!!
+Starting this blog as new year resolution!
 
 While building this blogdown website is made so easy with __blogdown__ package, I did have a difficult time setting up ssh for use. Perhaps I should learn the ssh and do it as my second post? I also want to talk about R, vim, building websites as I learn it. Let's see if I can get this going!
