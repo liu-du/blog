@@ -30,7 +30,7 @@ hasCJKLanguage = true
     MathJaxVersion = "2.7.1"
 
     [params.logo]
-    url = "logo.png"
+    url = "logo_GnBu.png"
     width = 50
     height = 50
     alt = "Logo"
