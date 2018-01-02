@@ -1,7 +1,7 @@
 # simple logo with ggplot2
 inv_logit <- function(x, base = exp(1)) (base^x)/(1 + base^x)
 
-for (i in rownames(RColorBrewer::brewer.pal.info)[1:3]) {
+for (i in rownames(RColorBrewer::brewer.pal.info)) {
   print(
     
 tibble(t = seq(0, 42 * pi * 2, 0.05)) %>%
