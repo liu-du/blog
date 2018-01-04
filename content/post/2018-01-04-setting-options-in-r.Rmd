@@ -1,0 +1,36 @@
+---
+title: Setting options in R
+author: ''
+date: '2018-01-04'
+slug: setting-options-in-r
+categories:
+  - R
+tags:
+  - R
+---
+
+
+When developing a package or a set of functions, you often needs a lot of options. Ideally you would often want to set some sensible defaults for each option whilst giving the user the flexibility to customize and extend. Take `ggplot2` for example, if you ever plot any plots with it, you know the background of the plots is, by default, grey. However, you have the flexibility to change it. `theme_set` function allows you to customize it. For another example, when writing an Rmarkdown file, the first code chunck, by default, look like this:
+
+```r
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+`opts_chunk` is a "option manager" for knitr package, it's a list of five functions that allows the user to customize code chunk options.:
+
+```{r}
+ls(knitr::opts_chunk)
+```
+
+- `dlstats` uses a make available a object `.dlstats` in the global environment when you attach the library. However you may not realize you have it in your space until you type `ls(all.names = TRUE)`. Rstudio doesn't display objects whose name starts with a __.__ on the upper right panel.
+
+- `ggplot2` use an environment object, `theme_env`, defined in the `namespace:ggplot2` but not exported (i.e. not in the `package:ggplot2`). You can find it by `getAnywhere(theme_env)`  __Correct__
+
+- `knitr` adds an extra layer of security: it uses a function factory pattern. When compiling the package, the opts_chunck is returned by an internal function `new_defaults()`. Because R functions are implemented as closure, the functions enlisted in `opts_chunck` are enclosed in the execution environment of `new_defaults()`. 
+
+- `tibble` 
+
+- Is there a package 
+
+
+Is namespace:base equal package:base? see advanced R hadley chapter environment right before 6.3.3 
