@@ -6,10 +6,19 @@
     <description>Recent content on LD&#39;s blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Mon, 01 Jan 2018 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Thu, 04 Jan 2018 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Setting options in R</title>
+      <link>/2018/01/04/setting-options-in-r/</link>
+      <pubDate>Thu, 04 Jan 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/2018/01/04/setting-options-in-r/</guid>
+      <description>When developing a package or a set of functions, you often needs a lot of options. Ideally you would often want to set some sensible defaults for each option whilst giving the user the flexibility to customize and extend. Take ggplot2 for example, if you ever plot any plots with it, you know the background of the plots is, by default, grey. However, you have the flexibility to change it. theme_set function allows you to customize it.</description>
+    </item>
     
     <item>
       <title>About</title>
@@ -18,6 +27,7 @@
       
       <guid>/about/</guid>
       <description>I am a learner.
+haha!!
 One day I realized I should try to write about what I learned - it could be an effective way to turn passive learning into active/creative thinking. I also hope to share my findings and random thoughts with people and find people who share passions with me.</description>
     </item>
     

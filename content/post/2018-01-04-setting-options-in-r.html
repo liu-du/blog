@@ -1,0 +1,26 @@
+---
+title: Setting options in R
+author: ''
+date: '2018-01-04'
+slug: setting-options-in-r
+categories:
+  - R
+tags:
+  - R
+---
+
+
+
+<p>When developing a package or a set of functions, you often needs a lot of options. Ideally you would often want to set some sensible defaults for each option whilst giving the user the flexibility to customize and extend. Take <code>ggplot2</code> for example, if you ever plot any plots with it, you know the background of the plots is, by default, grey. However, you have the flexibility to change it. <code>theme_set</code> function allows you to customize it. For another example, when writing an Rmarkdown file, the first code chunck, by default, look like this:</p>
+<pre class="r"><code>knitr::opts_chunk$set(echo = TRUE)</code></pre>
+<p><code>opts_chunk</code> is a “option manager” for knitr package, it’s a list of five functions that allows the user to customize code chunk options.:</p>
+<pre class="r"><code>ls(knitr::opts_chunk)</code></pre>
+<pre><code>## [1] &quot;append&quot;  &quot;get&quot;     &quot;merge&quot;   &quot;restore&quot; &quot;set&quot;</code></pre>
+<ul>
+<li><p><code>dlstats</code> uses a make available a object <code>.dlstats</code> in the global environment when you attach the library. However you may not realize you have it in your space until you type <code>ls(all.names = TRUE)</code>. Rstudio doesn’t display objects whose name starts with a <strong>.</strong> on the upper right panel.</p></li>
+<li><p><code>ggplot2</code> use an environment object, <code>theme_env</code>, defined in the <code>namespace:ggplot2</code> but not exported (i.e. not in the <code>package:ggplot2</code>). You can find it by <code>getAnywhere(theme_env)</code> <strong>Correct</strong></p></li>
+<li><p><code>knitr</code> adds an extra layer of security: it uses a function factory pattern. When compiling the package, the opts_chunck is returned by an internal function <code>new_defaults()</code>. Because R functions are implemented as closure, the functions enlisted in <code>opts_chunck</code> are enclosed in the execution environment of <code>new_defaults()</code>.</p></li>
+<li><p><code>tibble</code></p></li>
+<li><p>Is there a package</p></li>
+</ul>
+<p>Is namespace:base equal package:base? see advanced R hadley chapter environment right before 6.3.3</p>
