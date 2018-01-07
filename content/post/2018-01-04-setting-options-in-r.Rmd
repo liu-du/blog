@@ -1,7 +1,6 @@
 ---
 title: Setting options in R
-author: ''
-date: '2018-01-04'
+date: '2018-01-07'
 slug: setting-options-in-r
 categories:
   - R
@@ -9,28 +8,199 @@ tags:
   - R
 ---
 
-
-When developing a package or a set of functions, you often needs a lot of options. Ideally you would often want to set some sensible defaults for each option whilst giving the user the flexibility to customize and extend. Take `ggplot2` for example, if you ever plot any plots with it, you know the background of the plots is, by default, grey. However, you have the flexibility to change it. `theme_set` function allows you to customize it. For another example, when writing an Rmarkdown file, the first code chunck, by default, look like this:
-
-```r
-knitr::opts_chunk$set(echo = TRUE)
+```{r include=FALSE}
+library(dplyr)
+library(stringr)
+library(ggplot2)
+library(tibble)
+library(data.table)
 ```
 
-`opts_chunk` is a "option manager" for knitr package, it's a list of five functions that allows the user to customize code chunk options.:
+When developing a package or a set of functions, you often needs a lot of options. Ideally you would often want to set some sensible defaults for each option whilst giving users the flexibility to customize and extend. Take `ggplot2` for example, if you ever plot any plots with it, you know the background of the plots is, by default, grey. However, you have the flexibility to change it. `theme_set` function allows you to customize it. 
+
+While there are many ways to set options, I haven't found a summary of pros and cons of different approaches and I certainly don't know what best practices are. So I guess it could be useful to poke around several packages and see how they approach option setting. 
+
+## ggplot2
+
+Start from `ggplot2`. It turns out that `ggplot2` use an environment object, `theme_env`, defined in the `namespace:ggplot2` but not exported: 
+
+```{r}
+getAnywhere(theme_env)
+```
+
+Also note that the parent environment for `theme_env` is the empty environment. 
+This ensures that R does not look else where if it can't find a setting in `theme_env`. `ggplot2` also provides several functions `theme_***()` to allow users to change the theme.
+
+So it seems almost trivial if you're writing a package: just create an option object and it will live in the package namespace not in gloabl environment. Okay at least I learned something obvious. But if you don't want to package your functions up for some reason and you don't want to expose your option object in global envrionment, how do you go about implementing that? 
+
+It might be tempting to create a global object holding all your options with the name of the object starting with "." which makes it a "hidden" object that the user is not aware of until they type `ls(all.names = TRUE)`. However, this does not isolate users from the object, you will need to worry about cases like what if the users removed it? or what if the user supplied an invalid options? 
+
+## tibble 
+
+Let's take a look at the newest `tibble` package, which added color in printing method so it's almost a small visualisation. It's approach to option setting follows the same pattern: there is a list object, `op.tibble`, that stores options and that is not exported: 
+```{r}
+getAnywhere(op.tibble)
+```
+
+However, tibble package does not provide a getter or setter function for users to change the default options, instead it relies on `base::options()` function.  For example, by default, if you print a tibble, the console show a maximum of 10 rows if your tibble has more than 20 rows. You can change this by `options(tibble.print_max = n, tibble.print_min = m)`, which means if there are more than n rows, print only the first m rows. 
+
+In fact many packages use `options()` to allow the user to change defaults, below I am listing options for `data.table`, `profvis` and `shiny`:
+```{r}
+options() %>% names %>% str_subset("profvis|datatable|shiny")
+```
+
+This approach is cognitively easier for users - the user don't need to learn option getters or setters that are different for different packages, and more importantly, you don't need to create a global option object: simply move all your options into `options()` function! The downside is that you can potentially have option clashes with other packages: it's a good idea to prefix your options with your package name. 
+
+`options()` function is a very good solution to our problem. It allows you to move your options outside of the gloabl envrionment, but you can't check the options supplied is valid when the user supply them. In other words, it still fully expose the options and you need to worry about that. Is there a better solution?
+
+
+## knitr
+
+When writing an Rmarkdown file, the first code chunck, by default, look like this:  `knitr::opts_chunk$set(echo = TRUE)`. Here, `opts_chunk` is a list of five functions through which users can interact with code chunk options; `opts_chunk` acts like an "option manager".
+
 
 ```{r}
 ls(knitr::opts_chunk)
 ```
 
-- `dlstats` uses a make available a object `.dlstats` in the global environment when you attach the library. However you may not realize you have it in your space until you type `ls(all.names = TRUE)`. Rstudio doesn't display objects whose name starts with a __.__ on the upper right panel.
 
-- `ggplot2` use an environment object, `theme_env`, defined in the `namespace:ggplot2` but not exported (i.e. not in the `package:ggplot2`). You can find it by `getAnywhere(theme_env)`  __Correct__
+`knitr` is somewhat special. It uses a [__function factory__](http://adv-r.had.co.nz/Functional-programming.html#closures) pattern. When compiling the package, the `opts_chunck` is returned by an internal function `knitr:::new_defaults()`. Because R functions are implemented as closure, the functions enlisted in `opts_chunck` are __enclosed__ in the execution environment of `knitr:::new_defaults()` when the package is compiled. To see if this is true, rebuild `knitr` (or re`install.package("knitr")` on a different day), and `environment(knitr::opts_chunk$get)` will give you a different environment.
 
-- `knitr` adds an extra layer of security: it uses a function factory pattern. When compiling the package, the opts_chunck is returned by an internal function `new_defaults()`. Because R functions are implemented as closure, the functions enlisted in `opts_chunck` are enclosed in the execution environment of `new_defaults()`. 
+This approach shows it's advantage if you don't want to package up your functions: you can avoid creating a global object that holds your options: store your options in your function! More importantly, one can implement checks, _at the time whem the user supply options_, to ensure that the they are valid. Below is a simple example: I created a global object `my_opts`, my "option manager", and two default options `a = 1` and `b = 2`. 
 
-- `tibble` 
+```{r}
+default_options <- list(a = 1, b = 2)
 
-- Is there a package 
+new_defaults <- function(current_options) {
+  
+  # create a copy of default options so users can reset to defaults
+  old <- current_options
+  
+  # create an "option manager", my_opts, and assign it into global environment
+  my_opts <<- list(
+    
+    # getter function 
+    get = function(x) {
+      # return all options by default
+      if (missing(x)) current_options 
+      else if (x %in% names(current_options)) 
+        # return specified options
+        current_options[[x]]
+      else
+        # throw a more informative error message if the user type invalid option name
+        stop("No such option available")
+    },
+    
+    # setter function
+    set = function(x, new_value) {
+      if (missing(x) | missing(new_value)) 
+        stop("Please specify both x and new_value")
+      if (x %in% names(current_options)) {
+        # perform some test to check that the new_value is valid before change settings
+        # get a reference to the enclosing environment
+        option_env <- parent.env(environment()) 
+        # assign new_value into options
+        option_env$current_options[[x]] <- new_value
+      } else stop("No such option available")
+    },
+    reset = function() {
+      current_options <<- old
+    }
+  )
+}
+new_defaults(default_options)
+
+# can remove this function (the users won't need it and we just need it once to create my_opts)
+rm(new_defaults, default_options)
+```
 
 
-Is namespace:base equal package:base? see advanced R hadley chapter environment right before 6.3.3 
+Let's test if getter works:
+```{r}
+# get option a
+my_opts$get("a")
+my_opts$get()
+```
+
+Test if error message works:
+```{r eval=FALSE}
+my_opts$set("d")
+# Error in my_opts$set("d") : Please specify both x and new_value
+```
+
+Test if the setter works:
+```{r}
+my_opts$set("a", 999)
+my_opts$get("a")
+```
+
+Test if `my_opts$reset()` works
+```{r}
+my_opts$reset()
+my_opts$get("a")
+```
+
+Or, if you don't want to use an "option manager" (because it appears under "Data" section on the upper right panel of the Rstudio), we can wrap everything into one function that allows users to interact with options. By the way, I marvel at the flexibility of R: you can change the enclosing environment of a function after it's been created:
+
+```{r}
+my_opts2 <- function(mode = c("get", "set", "reset"), x, new_value) {
+  mode <- match.arg(mode)
+  
+  switch(
+    mode,
+    get = {
+      if (missing(x)) current_options
+      else if (any(names(current_options) %in% x))  current_options[names(current_options) %in% x]
+      else stop("No such option available")
+    },
+    set = {
+      if (missing(x) | missing(new_value)) 
+        stop("Please specify both x and new_value")
+      if (x %in% names(current_options)) {
+        option_env <- parent.env(environment()) 
+        option_env$current_options[[x]] <- new_value
+      } else stop("No such option available")
+    },
+    reset = current_options <<- old
+  )
+}
+option_env <- new.env(parent = .GlobalEnv)
+option_env$old <- option_env$current_options <- list(a = 100, b = 200)
+environment(my_opts2) <- option_env
+rm(option_env)
+```
+
+```{r collapse=TRUE}
+my_opts2("get", "a")
+my_opts2("set", "b", 0)
+my_opts2("get", "b")
+my_opts2("reset")
+my_opts2()
+```
+
+## I see where I am getting at...
+
+__Mutable state!__
+
+It's probably an overkill to implement mutable state object simply to set some options... But it could be useful if I don't want my programming skills to stay still. Let me come back at it later!
+Read [RC](http://adv-r.had.co.nz/OO-essentials.html#rc), or [R6](https://adv-r.hadley.nz/r6.html) from Hadley's fantastic book!
+
+<!-- base R function `asNamespace` allows you to inspect Namespace! Triple colon `:::` allows you to access internal functions, "Use it at your own risk". In fact `:::` simply wraps `get` and `asNamespace`. (`::` wraps `getExportedValue` which wraps get0) -->
+
+
+<!-- You can not use getAnywhere to find exported data, because exported data does not live in package environment or the namespace -->
+
+<!-- Is namespace:base equal package:base? see advanced R hadley chapter environment right before 6.3.3  -->
+
+
+<!-- - why skimr has so few bindings in `imports:skimr`? -->
+
+<!--     - list function in DESCRIPTION and refer to a function use `::`. This will not place external functions in `imports:your_package` -->
+<!--     - Or list function in NAMESPACE then you don't need to use `::`. This will place external functions in `imports:your_package`. If you use an external funtion repeatedly, it's better to list it in NAMESPACE and it gives you  -->
+    
+
+
+<!-- Idea:  -->
+<!-- 1. a peek package that allows user to insert functions between pipes which return invisibly original data. so the user can write long pipes -->
+<!-- 1. isGeneric("mean") return FALSE, but isGeneric("plot") returns TRUE. what is isGeneric doing? -->
+<!-- 1. Some times you want an object of certain (common) type, and you don't want to create it by hand because it wastes your time, occupy you global env and interrupts your thoughts. so let's do a summary of different types of object available in R -->
