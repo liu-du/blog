@@ -17,7 +17,8 @@
       <pubDate>Sun, 07 Jan 2018 00:00:00 +0000</pubDate>
       
       <guid>/2018/01/07/setting-options-in-r/</guid>
-      <description>When developing a package or a set of functions, you often needs a lot of options. Ideally you would often want to set some sensible defaults for each option whilst giving users the flexibility to customize and extend. Take ggplot2 for example, if you ever plot any plots with it, you know the background of the plots is, by default, grey. However, you have the flexibility to change it. theme_set function allows you to customize it.</description>
+      <description>When developing a package or a set of functions, you often needs a lot of options. Often, you would want to set some sensible defaults for each option whilst giving users the flexibility to customize and extend. Take ggplot2 for example, if you ever used it, you know the background of the plots is, by default, grey, though You have the flexibility to change it.
+While there are many ways to set options, I haven’t found a summary of pros and cons of different approaches and I certainly don’t know what best practices are.</description>
     </item>
     
   </channel>

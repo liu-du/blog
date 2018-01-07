@@ -10,25 +10,25 @@ tags:
 
 
 
-<p>When developing a package or a set of functions, you often needs a lot of options. Ideally you would often want to set some sensible defaults for each option whilst giving users the flexibility to customize and extend. Take <code>ggplot2</code> for example, if you ever plot any plots with it, you know the background of the plots is, by default, grey. However, you have the flexibility to change it. <code>theme_set</code> function allows you to customize it.</p>
+<p>When developing a package or a set of functions, you often needs a lot of options. Often, you would want to set some sensible defaults for each option whilst giving users the flexibility to customize and extend. Take <code>ggplot2</code> for example, if you ever used it, you know the background of the plots is, by default, grey, though You have the flexibility to change it.</p>
 <p>While there are many ways to set options, I haven’t found a summary of pros and cons of different approaches and I certainly don’t know what best practices are. So I guess it could be useful to poke around several packages and see how they approach option setting.</p>
 <div id="ggplot2" class="section level2">
 <h2>ggplot2</h2>
-<p>Start from <code>ggplot2</code>. It turns out that <code>ggplot2</code> use an environment object, <code>theme_env</code>, defined in the <code>namespace:ggplot2</code> but not exported:</p>
+<p><code>ggplot2</code> use an environment object, <code>theme_env</code>, to hold all theme related options. It is defined in the <code>namespace:ggplot2</code> but not exported:</p>
 <pre class="r"><code>getAnywhere(theme_env)</code></pre>
 <pre><code>## A single object matching &#39;theme_env&#39; was found
 ## It was found in the following places
 ##   namespace:ggplot2
 ## with value
 ## 
-## &lt;environment: 0x000000001a0e1a48&gt;</code></pre>
-<p>Also note that the parent environment for <code>theme_env</code> is the empty environment. This ensures that R does not look else where if it can’t find a setting in <code>theme_env</code>. <code>ggplot2</code> also provides several functions <code>theme_***()</code> to allow users to change the theme.</p>
-<p>So it seems almost trivial if you’re writing a package: just create an option object and it will live in the package namespace not in gloabl environment. Okay at least I learned something obvious. But if you don’t want to package your functions up for some reason and you don’t want to expose your option object in global envrionment, how do you go about implementing that?</p>
-<p>It might be tempting to create a global object holding all your options with the name of the object starting with “.” which makes it a “hidden” object that the user is not aware of until they type <code>ls(all.names = TRUE)</code>. However, this does not isolate users from the object, you will need to worry about cases like what if the users removed it? or what if the user supplied an invalid options?</p>
+## &lt;environment: 0x000000001ed26420&gt;</code></pre>
+<p>Also note that the parent environment for <code>theme_env</code> is the <code>emptyenv()</code>. This ensures that R does not look else where if it can’t find a setting in <code>theme_env</code>. <code>ggplot2</code> also provides several functions <code>theme_***()</code> to allow users to change the theme.</p>
+<p>So it seems almost trivial if you’re writing a package: just create an option object and it will live in the package namespace not in the gloabl environment. Okay at least I learned something obvious. But if you don’t want to package your functions up for some reason and you don’t want to expose your option object in global envrionment, how do you go about implementing that?</p>
+<p>It might be tempting to create a global object holding all your options with the name of the object starting with “.” which makes it a “hidden” object that the user is not aware of until they type <code>ls(all.names = TRUE)</code>. However, this does not isolate users from the object: you will need to worry about cases like what if the users removed it? or what if the user supplied an invalid options?</p>
 </div>
 <div id="tibble" class="section level2">
 <h2>tibble</h2>
-<p>Let’s take a look at the newest <code>tibble</code> package, which added color in printing method so it’s almost a small visualisation. It’s approach to option setting follows the same pattern: there is a list object, <code>op.tibble</code>, that stores options and that is not exported:</p>
+<p>Let’s take a look at <code>tibble</code> package which is a modern reimagination of <code>data.frame</code>.<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> It’s approach to option setting follows the same pattern: there is a list object, <code>op.tibble</code>, that stores options and that is not exported:</p>
 <pre class="r"><code>getAnywhere(op.tibble)</code></pre>
 <pre><code>## A single object matching &#39;op.tibble&#39; was found
 ## It was found in the following places
@@ -46,8 +46,8 @@ tags:
 ## 
 ## $tibble.max_extra_cols
 ## [1] 100</code></pre>
-<p>However, tibble package does not provide a getter or setter function for users to change the default options, instead it relies on <code>base::options()</code> function. For example, by default, if you print a tibble, the console show a maximum of 10 rows if your tibble has more than 20 rows. You can change this by <code>options(tibble.print_max = n, tibble.print_min = m)</code>, which means if there are more than n rows, print only the first m rows.</p>
-<p>In fact many packages use <code>options()</code> to allow the user to change defaults, below I am listing options for <code>data.table</code>, <code>profvis</code> and <code>shiny</code>:</p>
+<p>However, tibble package does not provide a getter or setter function for users to change the default options, instead it relies on <code>base::options()</code> function. For example, if you print a tibble, by default, the console shows a maximum of 10 rows if your tibble has more than 20 rows. You can change this behaviour by <code>options(tibble.print_max = n, tibble.print_min = m)</code>, which means if there are more than n rows, print only the first m rows.</p>
+<p>In fact many packages use <code>options()</code> to allow the user to change defaults, below I am listing options for <code>data.table</code>, <code>profvis</code> and <code>shiny</code> (for some reason, the options for <code>shiny</code> and <code>profvis</code> only show up if you use rstudio, I guess the options are rstudio specific):</p>
 <pre class="r"><code>options() %&gt;% names %&gt;% str_subset(&quot;profvis|datatable|shiny&quot;)</code></pre>
 <pre><code>##  [1] &quot;datatable.alloccol&quot;             &quot;datatable.allow.cartesian&quot;     
 ##  [3] &quot;datatable.auto.index&quot;           &quot;datatable.dfdispatchwarn&quot;      
@@ -59,24 +59,25 @@ tags:
 ## [15] &quot;datatable.print.topn&quot;           &quot;datatable.showProgress&quot;        
 ## [17] &quot;datatable.use.index&quot;            &quot;datatable.verbose&quot;             
 ## [19] &quot;datatable.warnredundantby&quot;</code></pre>
-<p>This approach is cognitively easier for users - the user don’t need to learn option getters or setters that are different for different packages, and more importantly, you don’t need to create a global option object: simply move all your options into <code>options()</code> function! The downside is that you can potentially have option clashes with other packages: it’s a good idea to prefix your options with your package name.</p>
-<p><code>options()</code> function is a very good solution to our problem. It allows you to move your options outside of the gloabl envrionment, but you can’t check the options supplied is valid when the user supply them. In other words, it still fully expose the options and you need to worry about that. Is there a better solution?</p>
+<p>This approach is cognitively easier for users - the user don’t need to learn option getters or setters that are different for different packages, and more importantly, you don’t need to create a global option object: simply move all your options into <code>options()</code> function! The downside is that you can potentially have option clashes with other packages; it’s a good idea to prefix your options with your package name. Further more, you can’t check that the options supplied is valid when the user supply them. In other words, it still fully exposes the options and you need to worry about that. Is there a better solution?</p>
 </div>
 <div id="knitr" class="section level2">
 <h2>knitr</h2>
 <p>When writing an Rmarkdown file, the first code chunck, by default, look like this: <code>knitr::opts_chunk$set(echo = TRUE)</code>. Here, <code>opts_chunk</code> is a list of five functions through which users can interact with code chunk options; <code>opts_chunk</code> acts like an “option manager”.</p>
 <pre class="r"><code>ls(knitr::opts_chunk)</code></pre>
 <pre><code>## [1] &quot;append&quot;  &quot;get&quot;     &quot;merge&quot;   &quot;restore&quot; &quot;set&quot;</code></pre>
-<p><code>knitr</code> is somewhat special. It uses a <a href="http://adv-r.had.co.nz/Functional-programming.html#closures"><strong>function factory</strong></a> pattern. When compiling the package, the <code>opts_chunck</code> is returned by an internal function <code>knitr:::new_defaults()</code>. Because R functions are implemented as closure, the functions enlisted in <code>opts_chunck</code> are <strong>enclosed</strong> in the execution environment of <code>knitr:::new_defaults()</code> when the package is compiled. To see if this is true, rebuild <code>knitr</code> (or re<code>install.package(&quot;knitr&quot;)</code> on a different day), and <code>environment(knitr::opts_chunk$get)</code> will give you a different environment.</p>
-<p>This approach shows it’s advantage if you don’t want to package up your functions: you can avoid creating a global object that holds your options: store your options in your function! More importantly, one can implement checks, <em>at the time whem the user supply options</em>, to ensure that the they are valid. Below is a simple example: I created a global object <code>my_opts</code>, my “option manager”, and two default options <code>a = 1</code> and <code>b = 2</code>.</p>
+<p><code>knitr</code> is somewhat different. It uses a <a href="http://adv-r.had.co.nz/Functional-programming.html#closures"><strong>function factory</strong></a> pattern. When compiling the package, the <code>opts_chunck</code> is returned by an internal function <code>knitr:::new_defaults()</code>. Because R functions are implemented as closure, the functions enlisted in <code>opts_chunck</code> (i.e. <code>append()</code>, <code>get()</code>, etc.) are <strong>enclosed</strong> in the execution environment of <code>knitr:::new_defaults()</code> when the package is built. To see if this is true, open another R session, and <code>environment(knitr::opts_chunk$get)</code> will give you a different environment.</p>
+<p>This approach shows it’s advantage if you don’t want to package up your functions: you can avoid creating a global object that holds your options: store your options in your function! More importantly, one can implement checks, <em>at the time when the user supplies options</em>, to ensure that they are valid. Below is a simple example: I created a global object <code>my_opts</code>, my “option manager”, and two default options <code>a = 1</code> and <code>b = 2</code>.</p>
 <pre class="r"><code>default_options &lt;- list(a = 1, b = 2)
 
 new_defaults &lt;- function(current_options) {
   
-  # create a copy of default options so users can reset to defaults
+  # create a copy of default options 
+  # so users can reset to defaults
   old &lt;- current_options
   
-  # create an &quot;option manager&quot;, my_opts, and assign it into global environment
+  # create an &quot;option manager&quot;, my_opts, 
+  # and assign it into global environment
   my_opts &lt;&lt;- list(
     
     # getter function 
@@ -87,7 +88,8 @@ new_defaults &lt;- function(current_options) {
         # return specified options
         current_options[[x]]
       else
-        # throw a more informative error message if the user type invalid option name
+        # throw a more informative error message 
+        # if the user type invalid option name
         stop(&quot;No such option available&quot;)
     },
     
@@ -96,7 +98,8 @@ new_defaults &lt;- function(current_options) {
       if (missing(x) | missing(new_value)) 
         stop(&quot;Please specify both x and new_value&quot;)
       if (x %in% names(current_options)) {
-        # perform some test to check that the new_value is valid before change settings
+        # perform some test to check that 
+        # the new_value is valid before change settings
         # get a reference to the enclosing environment
         option_env &lt;- parent.env(environment()) 
         # assign new_value into options
@@ -109,8 +112,6 @@ new_defaults &lt;- function(current_options) {
   )
 }
 new_defaults(default_options)
-
-# can remove this function (the users won&#39;t need it and we just need it once to create my_opts)
 rm(new_defaults, default_options)</code></pre>
 <p>Let’s test if getter works:</p>
 <pre class="r"><code># get option a
@@ -141,7 +142,8 @@ my_opts$get(&quot;a&quot;)</code></pre>
     mode,
     get = {
       if (missing(x)) current_options
-      else if (any(names(current_options) %in% x))  current_options[names(current_options) %in% x]
+      else if (any(names(current_options) %in% x))  
+        current_options[names(current_options) %in% x]
       else stop(&quot;No such option available&quot;)
     },
     set = {
@@ -156,12 +158,12 @@ my_opts$get(&quot;a&quot;)</code></pre>
   )
 }
 option_env &lt;- new.env(parent = .GlobalEnv)
-option_env$old &lt;- option_env$current_options &lt;- list(a = 100, b = 200)
+option_env$old &lt;- option_env$current_options &lt;- list(a = 1, b = 2)
 environment(my_opts2) &lt;- option_env
 rm(option_env)</code></pre>
 <pre class="r"><code>my_opts2(&quot;get&quot;, &quot;a&quot;)
 ## $a
-## [1] 100
+## [1] 1
 my_opts2(&quot;set&quot;, &quot;b&quot;, 0)
 my_opts2(&quot;get&quot;, &quot;b&quot;)
 ## $b
@@ -169,10 +171,10 @@ my_opts2(&quot;get&quot;, &quot;b&quot;)
 my_opts2(&quot;reset&quot;)
 my_opts2()
 ## $a
-## [1] 100
+## [1] 1
 ## 
 ## $b
-## [1] 200</code></pre>
+## [1] 2</code></pre>
 </div>
 <div id="i-see-where-i-am-getting-at" class="section level2">
 <h2>I see where I am getting at…</h2>
@@ -188,4 +190,10 @@ my_opts2()
 <!-- 1. a peek package that allows user to insert functions between pipes which return invisibly original data. so the user can write long pipes -->
 <!-- 1. isGeneric("mean") return FALSE, but isGeneric("plot") returns TRUE. what is isGeneric doing? -->
 <!-- 1. Some times you want an object of certain (common) type, and you don't want to create it by hand because it wastes your time, occupy you global env and interrupts your thoughts. so let's do a summary of different types of object available in R -->
+</div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>See <code>tibble</code>’s github <a href="https://github.com/tidyverse/tibble">respository</a><a href="#fnref1">↩</a></p></li>
+</ol>
 </div>
