@@ -6,6 +6,7 @@ categories:
   - R
 tags:
   - R
+description: "setting options in R"
 ---
 
 ```{r include=FALSE}

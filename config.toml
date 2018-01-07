@@ -1,6 +1,6 @@
 baseurl = "/"
 languageCode = "en-us"
-title = "LD's blog"
+title = "A blog about R"
 theme = "hugo-lithium-theme"
 googleAnalytics = ""
 disqusShortname = ""
@@ -18,7 +18,7 @@ hasCJKLanguage = true
     url = "https://github.com/liu-du"
 
 [params]
-    description = "Du Liu's blog"
+    description = "A blog about R, Rstudio, Data Science, Actuarial Science"
 
     # options for highlight.js (version, additional languages, and theme)
     highlightjsVersion = "9.11.0"
