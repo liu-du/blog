@@ -22,7 +22,7 @@ description: "setting options in R"
 ##   namespace:ggplot2
 ## with value
 ## 
-## &lt;environment: 0x000000001f047428&gt;</code></pre>
+## &lt;environment: 0x0000000012e8f480&gt;</code></pre>
 <p>Also note that the parent environment for <code>theme_env</code> is the <code>emptyenv()</code>. This ensures that R does not look else where if it can’t find a setting in <code>theme_env</code>. <code>ggplot2</code> also provides several functions <code>theme_***()</code> to allow users to change the theme.</p>
 <p>So it seems almost trivial if you’re writing a package: just create an option object and it will live in the package namespace not in the gloabl environment. Okay at least I learned something obvious. But if you don’t want to package your functions up for some reason and you don’t want to expose your option object in global envrionment, how do you go about implementing that?</p>
 <p>It might be tempting to create a global object holding all your options with the name of the object starting with “.” which makes it a “hidden” object that the user is not aware of until they type <code>ls(all.names = TRUE)</code>. However, this does not isolate users from the object: you will need to worry about cases like what if the users removed it? or what if the user supplied an invalid options?</p>
@@ -66,7 +66,7 @@ description: "setting options in R"
 <h2>knitr</h2>
 <p>When writing an Rmarkdown file, the first code chunck, by default, look like this: <code>knitr::opts_chunk$set(echo = TRUE)</code>. Here, <code>opts_chunk</code> is a list of five functions through which users can interact with code chunk options; <code>opts_chunk</code> acts like an “option manager”.</p>
 <pre class="r"><code>ls(knitr::opts_chunk)</code></pre>
-<pre><code>## [1] &quot;append&quot;  &quot;get&quot;     &quot;merge&quot;   &quot;restore&quot; &quot;set&quot;</code></pre>
+<pre><code>## [1] &quot;get&quot;     &quot;merge&quot;   &quot;restore&quot; &quot;set&quot;</code></pre>
 <p><code>knitr</code> is somewhat different. It uses a <a href="http://adv-r.had.co.nz/Functional-programming.html#closures"><strong>function factory</strong></a> pattern. When compiling the package, the <code>opts_chunck</code> is returned by an internal function <code>knitr:::new_defaults()</code>. Because R functions are implemented as closure, the functions enlisted in <code>opts_chunck</code> (i.e. <code>append()</code>, <code>get()</code>, etc.) are <strong>enclosed</strong> in the execution environment of <code>knitr:::new_defaults()</code> when the package is built. To see if this is true, open another R session, and <code>environment(knitr::opts_chunk$get)</code> will give you a different environment.</p>
 <p>This approach shows it’s advantage if you don’t want to package up your functions: you can avoid creating a global object that holds your options: store your options in your function! More importantly, one can implement checks, <em>at the time when the user supplies options</em>, to ensure that they are valid. Below is a simple example: I created a global object <code>my_opts</code>, my “option manager”, and two default options <code>a = 1</code> and <code>b = 2</code>.</p>
 <pre class="r"><code>default_options &lt;- list(a = 1, b = 2)
@@ -185,12 +185,16 @@ my_opts2()
 <!-- You can not use getAnywhere to find exported data, because exported data does not live in package environment or the namespace -->
 <!-- Is namespace:base equal package:base? see advanced R hadley chapter environment right before 6.3.3  -->
 <!-- - why skimr has so few bindings in `imports:skimr`? -->
-<!--     - list function in DESCRIPTION and refer to a function use `::`. This will not place external functions in `imports:your_package` -->
-<!--     - Or list function in NAMESPACE then you don't need to use `::`. This will place external functions in `imports:your_package`. If you use an external funtion repeatedly, it's better to list it in NAMESPACE and it gives you  -->
+<!--     - list a package in DESCRIPTION and refer to a function in that package use `::`. This will not place external functions in `imports:your_package` -->
+<!--     - Or list a package in NAMESPACE then you don't need to use `::` when refering to a function in that package. This will place external functions in `imports:your_package`. If you use an external funtion repeatedly, it's better to list it in NAMESPACE and it gives you a small function lookup time. -->
 <!-- Idea:  -->
-<!-- 1. a peek package that allows user to insert functions between pipes which return invisibly original data. so the user can write long pipes -->
+<!-- Programmining -->
+<!-- 1. a peek package that allows user to insert functions between pipes which return invisibly original data. so the user can write long pipes, this is actually done by the %T>% operator from magrittr package -->
 <!-- 1. isGeneric("mean") return FALSE, but isGeneric("plot") returns TRUE. what is isGeneric doing? -->
 <!-- 1. Some times you want an object of certain (common) type, and you don't want to create it by hand because it wastes your time, occupy you global env and interrupts your thoughts. so let's do a summary of different types of object available in R -->
+<!-- Statistics -->
+<!-- 1. producing qq-plot for tweedie distribution. Visualizing tweedie distribution -->
+<!-- 1. quantmod to get stock data every day, use logistic regression, lda and knn to predict up or down, assume invest/not invest 1 dollar by the rule every day, update my gains every day. -->
 </div>
 <div class="footnotes">
 <hr />

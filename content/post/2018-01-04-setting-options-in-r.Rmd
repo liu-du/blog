@@ -199,12 +199,19 @@ Read [RC](http://adv-r.had.co.nz/OO-essentials.html#rc), or [R6](https://adv-r.h
 
 <!-- - why skimr has so few bindings in `imports:skimr`? -->
 
-<!--     - list function in DESCRIPTION and refer to a function use `::`. This will not place external functions in `imports:your_package` -->
-<!--     - Or list function in NAMESPACE then you don't need to use `::`. This will place external functions in `imports:your_package`. If you use an external funtion repeatedly, it's better to list it in NAMESPACE and it gives you  -->
+<!--     - list a package in DESCRIPTION and refer to a function in that package use `::`. This will not place external functions in `imports:your_package` -->
+<!--     - Or list a package in NAMESPACE then you don't need to use `::` when refering to a function in that package. This will place external functions in `imports:your_package`. If you use an external funtion repeatedly, it's better to list it in NAMESPACE and it gives you a small function lookup time. -->
     
 
 
 <!-- Idea:  -->
-<!-- 1. a peek package that allows user to insert functions between pipes which return invisibly original data. so the user can write long pipes -->
+
+<!-- Programmining -->
+
+<!-- 1. a peek package that allows user to insert functions between pipes which return invisibly original data. so the user can write long pipes, this is actually done by the %T>% operator from magrittr package -->
 <!-- 1. isGeneric("mean") return FALSE, but isGeneric("plot") returns TRUE. what is isGeneric doing? -->
 <!-- 1. Some times you want an object of certain (common) type, and you don't want to create it by hand because it wastes your time, occupy you global env and interrupts your thoughts. so let's do a summary of different types of object available in R -->
+
+<!-- Statistics -->
+<!-- 1. producing qq-plot for tweedie distribution. Visualizing tweedie distribution -->
+<!-- 1. quantmod to get stock data every day, use logistic regression, lda and knn to predict up or down, assume invest/not invest 1 dollar by the rule every day, update my gains every day. -->
