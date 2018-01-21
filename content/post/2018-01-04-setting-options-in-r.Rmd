@@ -1,12 +1,12 @@
 ---
-title: Setting options in R
+title: "R: Setting options"
 date: '2018-01-07'
 slug: setting-options-in-r
 categories:
   - R
 tags:
   - R
-description: "setting options in R"
+description: "R: setting options"
 ---
 
 ```{r include=FALSE}
