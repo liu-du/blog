@@ -6,10 +6,21 @@
     <description>Recent content on A blog about R</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sun, 21 Jan 2018 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Sat, 27 Jan 2018 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Statistical Learning: Cross Validation wrong and right way</title>
+      <link>/2018/01/27/statistical-learning-cross-validation/</link>
+      <pubDate>Sat, 27 Jan 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/2018/01/27/statistical-learning-cross-validation/</guid>
+      <description>IntroCross validation is one of the most popular methods for estimating test error and selecting tuning parameters, however, one can easily be mislead/confused by it without realising it.
+In chapter 5 of An Introduction to Statistical learning, the authors stress that if a dataset has a lot of features and relatively fewer observations, the variable selection process should also be cross validated.
+To see how things can go wrong in action, I simulated 1000 independent standard normal random variables, x1 - x1000, each with 100 observations and an independent standard normal target, y.</description>
+    </item>
     
     <item>
       <title>Statistical Learning: a bootstrap sample contains two thirds of original data points?</title>

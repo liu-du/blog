@@ -22,7 +22,7 @@ description: "R: setting options"
 ##   namespace:ggplot2
 ## with value
 ## 
-## &lt;environment: 0x000000001ed51cb0&gt;</code></pre>
+## &lt;environment: 0x000000001e08c0a8&gt;</code></pre>
 <p>Also note that the parent environment for <code>theme_env</code> is the <code>emptyenv()</code>. This ensures that R does not look else where if it can’t find a setting in <code>theme_env</code>. <code>ggplot2</code> also provides several functions <code>theme_***()</code> to allow users to change the theme.</p>
 <p>So it seems almost trivial if you’re writing a package: just create an option object and it will live in the package namespace not in the gloabl environment. Okay at least I learned something obvious. But if you don’t want to package your functions up for some reason and you don’t want to expose your option object in global envrionment, how do you go about implementing that?</p>
 <p>It might be tempting to create a global object holding all your options with the name of the object starting with “.” which makes it a “hidden” object that the user is not aware of until they type <code>ls(all.names = TRUE)</code>. However, this does not isolate users from the object: you will need to worry about cases like what if the users removed it? or what if the user supplied an invalid options?</p>

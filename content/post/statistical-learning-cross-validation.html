@@ -1,0 +1,180 @@
+---
+title: 'Statistical Learning: Cross Validation wrong and right way'
+date: '2018-01-27'
+slug: statistical-learning-cross-validation
+categories:
+  - Statistics
+tags:
+  - Statistical Learning
+  - Statistics
+---
+
+
+
+<div id="intro" class="section level2">
+<h2>Intro</h2>
+<p>Cross validation is one of the most popular methods for estimating test error and selecting tuning parameters, however, one can easily be mislead/confused by it without realising it.</p>
+<p>In chapter 5 of <a href="http://www-bcf.usc.edu/~gareth/ISL/ISLR%20First%20Printing.pdf"><em>An Introduction to Statistical learning</em></a>, the authors stress that if a dataset has a lot of features and relatively fewer observations, the variable selection process should also be cross validated.</p>
+<p>To see how things can go wrong in action, I simulated 1000 independent standard normal random variables, <code>x1</code> - <code>x1000</code>, each with 100 observations and an independent standard normal target, <code>y</code>. So I was just simulating a bunch of norm noise without any real signal in them. By design, the best model is just the intercept model (i.e. predicting 0 regardless of <code>x</code>s) and the <em>root mean squared error</em> (rmse) for this intercept model is 1 (because the target is standard normal). I should not expect that one can build a model and improve rmse on test set.</p>
+<pre class="r"><code>library(dplyr)
+library(purrr)
+
+set.seed(123)
+N &lt;- 100; n_features &lt;- 1000; K &lt;- 5
+
+data &lt;- 
+  data.frame(
+    y = rnorm(N),
+    setNames(lapply(rep(N, n_features), rnorm), 
+             paste0(&quot;x&quot;, 1:n_features))
+  ) %&gt;%  
+  mutate(fold = rep_len(1:K, length.out = nrow(.)))</code></pre>
+</div>
+<div id="the-wrong-way" class="section level2">
+<h2>The Wrong Way</h2>
+<p>A modeller takes my dataset and finds that there are moderate correlations between some <code>x</code>s and <code>y</code>, and that the top 5 variables are not correlated:</p>
+<pre class="r"><code>top5 &lt;- 
+  data[, -1] %&gt;% 
+  map_dbl(~ abs(cor(., data$y))) %&gt;% 
+  sort %&gt;% 
+  tail(5)
+top5</code></pre>
+<pre><code>##      x118      x561      x678      x804      x429 
+## 0.2865045 0.2869500 0.2920466 0.3012629 0.3055009</code></pre>
+<pre class="r"><code>plot(data[, c(&quot;y&quot;, names(top5))])</code></pre>
+<p><img src="/post/statistical-learning-cross-validation_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<p>So he decided to use these 5 features to fit a linear model as a starting point and use cross validation to estimate the test error:</p>
+<pre class="r"><code>formula &lt;- paste0(&quot;y ~ &quot;, paste(names(top5), collapse = &quot; + &quot;))
+formula</code></pre>
+<pre><code>## [1] &quot;y ~ x118 + x561 + x678 + x804 + x429&quot;</code></pre>
+<pre class="r"><code>rmse_train &lt;- rmse_val &lt;- double(K)
+for (i in 1:K) {
+  mod &lt;- lm(formula, data = data[data$fold != i, ])
+  rmse_train[i] &lt;- sqrt(mean(resid(mod)^2))
+  
+  pred &lt;- predict(mod, newdata = data[data$fold == i, ], type = &quot;response&quot;)
+  rmse_val[i] &lt;- sqrt(mean((pred - data$y[data$fold == i])^2))
+}
+summary(mod)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = formula, data = data[data$fold != i, ])
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -2.1560 -0.5050 -0.1391  0.5061  1.7522 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)   
+## (Intercept)  0.19217    0.08944   2.149  0.03494 * 
+## x118         0.11046    0.08269   1.336  0.18570   
+## x561        -0.23794    0.10147  -2.345  0.02172 * 
+## x678        -0.25883    0.09391  -2.756  0.00736 **
+## x804         0.24654    0.08668   2.844  0.00575 **
+## x429         0.26453    0.09818   2.694  0.00872 **
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.7593 on 74 degrees of freedom
+## Multiple R-squared:  0.3681, Adjusted R-squared:  0.3254 
+## F-statistic: 8.621 on 5 and 74 DF,  p-value: 1.788e-06</code></pre>
+<pre class="r"><code>mean(rmse_train)</code></pre>
+<pre><code>## [1] 0.7384612</code></pre>
+<pre class="r"><code>mean(rmse_val)</code></pre>
+<pre><code>## [1] 0.7942366</code></pre>
+<p>The model looks pretty good. On both training and test sets, the root mean squared error has reduced from about 1 (one would get from an intercept model) to just below 0.8 and the F test shows gives a p-value that is basically 0. However, he doesn’t realise that he’s just fitting to the noise and the true rmse for his model on a test data set is larger than 1. That is, he’s estimate for test error is biased upwards.</p>
+</div>
+<div id="the-right-way" class="section level2">
+<h2>The right way</h2>
+<p>The right way to do cross validation is to include the feature screening process in the cross validation as well. In the example below, you can see that although on the training data the rmse has reduced to 0.86, the validation set averages at around 1.1. which is a better estimate of test error.</p>
+<pre class="r"><code>for (i in 1:K) {
+  formula &lt;- 
+    data %&gt;% 
+    filter(fold != i) %&gt;% 
+    select(-fold, -y) %&gt;% 
+    map_dbl(~ abs(cor(., data$y[data$fold != i]))) %&gt;% 
+    sort %&gt;% 
+    tail(5) %&gt;%
+    names %&gt;% 
+    paste(collapse = &quot; + &quot;) %&gt;% 
+    paste0(&quot;y ~ &quot;, .)
+
+  mod &lt;- lm(formula, data = data[data$fold != i, ])
+  rmse_train[i] &lt;- sqrt(mean(resid(mod)^2))
+  
+  pred &lt;- predict(mod, newdata = data[data$fold == i, ], type = &quot;response&quot;)
+  rmse_val[i] &lt;- sqrt(mean((pred - data$y[data$fold == i])^2))
+}
+mean(rmse_train)</code></pre>
+<pre><code>## [1] 0.7026851</code></pre>
+<pre class="r"><code>mean(rmse_val)</code></pre>
+<pre><code>## [1] 1.127504</code></pre>
+<p>what is the true test error for the 5-predictor model? Below I simulated 500 test sets and predict on each set and take the average of rmse’s. It turns out that it is indeed around 1.1 (cv estimate for test error is slightly biased upwards as the models are fitted to a subset of the data).</p>
+<pre class="r"><code>mod &lt;- 
+  data[, -1] %&gt;% 
+  map_dbl(~ abs(cor(., data$y))) %&gt;% 
+  sort %&gt;% 
+  tail(5) %&gt;% 
+  names %&gt;% 
+  paste(collapse = &quot; + &quot;) %&gt;% 
+  paste0(&quot;y ~ &quot;, .) %&gt;% 
+  lm(data = data)
+
+rmse_test &lt;- double(500)
+
+for (i in 1:500) {
+  test_data &lt;- 
+    data.frame(
+      y = rnorm(N),
+      setNames(lapply(rep(N, n_features), rnorm), paste0(&quot;x&quot;, 1:n_features))
+    ) 
+
+  pred &lt;- predict(mod, newdata = test_data, type = &quot;response&quot;)
+  rmse_test[i] &lt;- sqrt(mean((pred - test_data$y)^2))
+  
+}
+
+mean(rmse_test)</code></pre>
+<pre><code>## [1] 1.117278</code></pre>
+<p>To see how the wrong test error estimate varies as sample size varies, I wraped the above wrong cross validation inside a function so I can iterate quickly on different sample sizes. The plot below shows the wrong estimate for rmse as a function of sample size, keeping number of features at 1000:</p>
+<pre class="r"><code>rm(list = ls(all.names = TRUE))
+set.seed(1000)
+compare_cv &lt;- function(N, n_features, top_features, K) {
+  
+  data &lt;- 
+    data.frame(
+      y = rnorm(N),
+      setNames(lapply(rep(N, n_features), rnorm), paste0(&quot;x&quot;, 1:n_features))
+    ) %&gt;%  
+    mutate(fold = rep_len(1:K,length.out = nrow(.)))
+  
+  rmse_val &lt;- numeric(K)
+  
+  # wrong cv
+  formula &lt;- 
+    data[, -1] %&gt;% 
+    map_dbl(~ abs(cor(., data$y))) %&gt;% 
+    sort %&gt;% 
+    tail(top_features) %&gt;%
+    names %&gt;% 
+    paste(collapse = &quot; + &quot;) %&gt;% 
+    paste0(&quot;y ~ &quot;, .) 
+  
+  for (i in 1:K) {
+    mod &lt;- lm(formula, data = data[data$fold != i, ])
+    pred &lt;- predict(mod, newdata = data[data$fold == i, ], type = &quot;response&quot;)
+    rmse_val[i] &lt;- sqrt(mean((pred - data$y[data$fold == i])^2))
+  }
+  mean(rmse_val)
+}
+
+sample_sizes &lt;- seq(10, 1000, by = 10)
+
+plot(sample_sizes, sapply(sample_sizes, compare_cv, n_features = 1000, top_features = 5, K = 5 ), xlab = &quot;Sample size&quot;, ylab = &quot;Wrong estimate for test rmse&quot;, ylim = c(0.2, 1.3), type = &quot;b&quot;, pch = 19, main = &quot;Wrong cross validation&quot; )
+abline(a = 1.12, b = 0, lty = 2)</code></pre>
+<p><img src="/post/statistical-learning-cross-validation_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+</div>
+<div id="summary" class="section level2">
+<h2>summary</h2>
+<p>The key takeway from this exercise is that feature selection should be cross validated, especially when sample size is small and feature space is large. Perhaps the first thing to do when modelling is to set aside a test set.</p>
+</div>
