@@ -1,6 +1,6 @@
 baseurl = "/"
 languageCode = "en-us"
-title = "A blog about R"
+title = "R | Data science | Visualisation"
 theme = "hugo-lithium-theme"
 googleAnalytics = ""
 disqusShortname = ""
@@ -11,14 +11,20 @@ hasCJKLanguage = true
     post = "/:year/:month/:day/:slug/"
 
 [[menu.main]]
+    name = "Blogs"
+    url = "/categories/"
+    weight = 1
+[[menu.main]]
     name = "About"
     url = "/about/"
+    weight = 3
 [[menu.main]]
     name = "GitHub"
     url = "https://github.com/liu-du"
+    weight = 4
 
 [params]
-    description = "A blog about R, Rstudio, Data Science, Actuarial Science"
+    description = "R, Statistics, Data Science, Machine Learning, Visualisation, Actuarial Science"
 
     # options for highlight.js (version, additional languages, and theme)
     highlightjsVersion = "9.11.0"
@@ -34,4 +40,3 @@ hasCJKLanguage = true
     width = 50
     height = 50
     alt = "Logo"
-

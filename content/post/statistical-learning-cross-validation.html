@@ -7,9 +7,20 @@ categories:
 tags:
   - Statistical Learning
   - Statistics
+output:
+  blogdown::html_page:
+    toc: true
 ---
 
 
+<div id="TOC">
+<ul>
+<li><a href="#intro">Intro</a></li>
+<li><a href="#the-wrong-way">The Wrong Way</a></li>
+<li><a href="#the-right-way">The Right Way</a></li>
+<li><a href="#summary">summary</a></li>
+</ul>
+</div>
 
 <div id="intro" class="section level2">
 <h2>Intro</h2>
@@ -85,7 +96,7 @@ summary(mod)</code></pre>
 <p>The model looks pretty good. On both training and test sets, the root mean squared error has reduced from about 1 (one would get from an intercept model) to just below 0.8 and the F test shows gives a p-value that is basically 0. However, he doesn’t realise that he’s just fitting to the noise and the true rmse for his model on a test data set is larger than 1. That is, he’s estimate for test error is biased upwards.</p>
 </div>
 <div id="the-right-way" class="section level2">
-<h2>The right way</h2>
+<h2>The Right Way</h2>
 <p>The right way to do cross validation is to include the feature screening process in the cross validation as well. In the example below, you can see that although on the training data the rmse has reduced to 0.86, the validation set averages at around 1.1. which is a better estimate of test error.</p>
 <pre class="r"><code>for (i in 1:K) {
   formula &lt;- 

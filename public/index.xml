@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>A blog about R</title>
+    <title>R | Data science | Visualisation</title>
     <link>/</link>
-    <description>Recent content on A blog about R</description>
+    <description>Recent content on R | Data science | Visualisation</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Sat, 27 Jan 2018 00:00:00 +0000</lastBuildDate>
@@ -17,9 +17,8 @@
       <pubDate>Sat, 27 Jan 2018 00:00:00 +0000</pubDate>
       
       <guid>/2018/01/27/statistical-learning-cross-validation/</guid>
-      <description>IntroCross validation is one of the most popular methods for estimating test error and selecting tuning parameters, however, one can easily be mislead/confused by it without realising it.
-In chapter 5 of An Introduction to Statistical learning, the authors stress that if a dataset has a lot of features and relatively fewer observations, the variable selection process should also be cross validated.
-To see how things can go wrong in action, I simulated 1000 independent standard normal random variables, x1 - x1000, each with 100 observations and an independent standard normal target, y.</description>
+      <description>IntroThe Wrong WayThe Right WaysummaryIntroCross validation is one of the most popular methods for estimating test error and selecting tuning parameters, however, one can easily be mislead/confused by it without realising it.
+In chapter 5 of An Introduction to Statistical learning, the authors stress that if a dataset has a lot of features and relatively fewer observations, the variable selection process should also be cross validated.</description>
     </item>
     
     <item>
@@ -47,9 +46,8 @@ While there are many ways to set options, I haven’t found a summary of pros an
       <pubDate>Mon, 01 Jan 2018 00:00:00 +0000</pubDate>
       
       <guid>/about/</guid>
-      <description>I am a learner.
-haha!!
-One day I realized I should try to write about what I learned - it could be an effective way to turn passive learning into active/creative thinking. I also hope to share my findings and random thoughts with people and find people who share passions with me.</description>
+      <description>I am an actuarial analyst working at Taylor Fry, Sydney. I studied actuarial science and statistics at the Australian National University.
+Inspired by Yihui, I realize I should try to write about what I&amp;rsquo;m learning - it could be an effective way to turn passive learning into active/creative thinking and consolidate my thoughts. I also hope my posts can help others as well as helping me. And I wish to connect with people who share similar passions.</description>
     </item>
     
     <item>

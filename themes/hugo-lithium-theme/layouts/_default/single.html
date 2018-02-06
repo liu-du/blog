@@ -4,7 +4,11 @@
 
   <article class="article">
     {{ if eq .Section "post" }}
+      {{ if lt .ReadingTime 2 }}
     <span class="article-duration">{{ .ReadingTime }} min read</span>
+      {{ else }}
+    <span class="article-duration">{{ .ReadingTime }} mins read</span>
+      {{end}}
     {{ end }}
 
     <h1 class="article-title">{{ .Title }}</h1>
@@ -12,6 +16,15 @@
     {{ if eq .Section "post" }}
     <span class="article-date">{{ .Date.Format "2006/01/02" }}</span>
     {{ end }}
+
+    <span style="color:grey; font-size:16px; float:right;">
+      {{ if .Params.categories }}
+        <strong>Category:</strong>
+        {{range .Params.categories}}
+        <a href="{{ "/categories/" | relLangURL }}{{ . | urlize }}">{{ title . }}</a>
+        {{end}}
+      {{end}}
+    </span>
 
     <div class="article-content">
       {{ .Content }}

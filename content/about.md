@@ -3,9 +3,6 @@ title: "About"
 date: "2018-01-01"
 ---
 
-I am a learner. 
+I am an actuarial analyst working at [Taylor Fry](http://www.taylorfry.com.au/), Sydney.  I studied actuarial science and statistics at the Australian National University.
 
-haha!!
-
-One day I realized I should try to write about what I learned - it could be an effective way to turn passive learning into active/creative thinking. I also hope to share my findings and random thoughts with people and find people who share passions with me. 
-
+Inspired by [Yihui](https://yihui.name), I realize I should try to write about what I'm learning - it could be an effective way to turn passive learning into active/creative thinking and consolidate my thoughts. I also hope my posts can help others as well as helping me. And I wish to connect with people who share similar passions.

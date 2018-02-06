@@ -319,3 +319,13 @@ code {
     box-shadow: none;
   }
 }
+
+blockquote {
+  font-style:italic;
+  color: #555555;
+  padding: 1px 20px;
+  margin: 30px 30px;
+  border-left: 8px solid #ccc ;
+  line-height:1.6;
+  background: #f9f9f9;
+}
