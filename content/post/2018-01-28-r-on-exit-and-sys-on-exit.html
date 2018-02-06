@@ -1,0 +1,196 @@
+---
+title: 'R: on.exit() and sys.on.exit()'
+author: ''
+date: '2018-01-28'
+slug: r-on-exit-and-sys-on-exit
+categories:
+  - R
+tags:
+  - R
+  - NSE
+draft: true
+---
+
+
+
+<div id="intro" class="section level2">
+<h2>Intro</h2>
+<p>Often one needs to write functions not just to perform computation, but also interact with the world outside of the function execution environment, for example, writing to a file, saving plots or changing working directory. Computer scientists called these operations <strong>side effects</strong>, in that these functions not only perform computation, but also change some aspects of the global state of the software. To be more precise, writing to a file requires a file connection to be established, saving plots requires opening a graphical device and changing working directories affects how to find things. In these cases, you need to make sure that when you function exits, whether normally of because of an error, the global state is restored, so that other functions that depends on the global state won’t be affected.</p>
+<p><code>on.exit()</code> function comes to the rescue: it <strong>captures</strong> the expression you supplied and run that expression when the function exits, whether normally or because of error. To see this in action, suppose we need to change the <code>digits</code> option to 3 during the function execution. To make sure the original option is restored on exit of the function, we can do this:</p>
+<pre class="r"><code>f &lt;- function() {
+  
+  old &lt;- options(&quot;digits&quot;) # get original options
+  options(digits = 3) # change the option
+  on.exit(options(old)) # register on.exit handler
+
+  print(options(&quot;digits&quot;))
+  cat(&quot;exiting...\n&quot;)
+}
+options(&quot;digits&quot;)</code></pre>
+<pre><code>## $digits
+## [1] 7</code></pre>
+<pre class="r"><code>f()</code></pre>
+<pre><code>## $digits
+## [1] 3
+## 
+## exiting...</code></pre>
+<pre class="r"><code>options(&quot;digits&quot;)</code></pre>
+<pre><code>## $digits
+## [1] 7</code></pre>
+<p>So we see that the expression that we supplied, <code>options(old)</code>, to <code>on.exit()</code> got execuated on <em>exit</em> of the function (in this case, after all codes of the function finished execution), so that the option <code>digits</code> is restored to the original value, 7. To test that the option gets restored even if an error is encountered:</p>
+<pre class="r"><code>f &lt;- function() {
+
+  old &lt;- options(&quot;digits&quot;)
+  options(digits = 3)
+  on.exit(options(old))
+
+  print(options(&quot;digits&quot;))
+  stop(&quot;unexpected error...&quot;)
+  cat(&quot;exiting...\n&quot;)
+}</code></pre>
+<pre class="r"><code>options(&quot;digits&quot;)
+# $digits
+# [1] 3
+
+f()
+# Error in f() : unexpected error...
+options(&quot;digits&quot;)
+# $digits
+# [1] 7</code></pre>
+<p>This time, the function exits immediately when it sees the error, so <code>cat(exiting...\n)</code> was not run. However, <code>on.exit(options(old))</code> was executed before the error, so the expression <code>options(old)</code> has already been registred and we see that the <code>digits</code> option got restored on exit. Note that this does mean you need to make sure that errors can not possibly occur between changing options (<code>options(digits = 3)</code>) and registering on.exit handler (<code>on.exit(options(old))</code>), so it’s a good habit to write an <code>on.exit</code> statement immediately after changing global state (see <code>shiny::runApp</code> for numerous examples).</p>
+<p>Note that at the begining, I use the bold <strong>capture</strong> to stress that <code>on.exit()</code> is implemented with one of the most interesting feature of R: computing on language, or non-standard evaluation, which basically means that R has the ability to capture literally what you typed instead of evaluating what you typed.</p>
+<p><code>sys.on.exit</code> is a useful function for us to peek into what’s registered at any point in time:</p>
+<pre class="r"><code>test.sys.on.exit &lt;- function() {
+
+  on.exit(print(1))
+  ex &lt;- sys.on.exit()
+  str(ex)
+
+  cat(&quot;exiting...\n&quot;)
+}
+test.sys.on.exit()</code></pre>
+<pre><code>##  language print(1)
+## exiting...
+## [1] 1</code></pre>
+<p>The final thing a function will do, before giving control back, is the run any expression captured by <code>on.exit()</code>. This means that the expression will be evaluated <strong>at the time</strong> of exit.</p>
+<p>Let’s experiment what will happen if we put <code>on.exit</code> in a loop:</p>
+<pre class="r"><code>test.sys.on.exit &lt;- function() {
+
+  for (i in 1:3) {
+    on.exit(print(i), add = TRUE)
+    ex &lt;- sys.on.exit()
+    str(ex)
+  }
+  cat(&quot;exiting...\n&quot;)
+
+}
+test.sys.on.exit()</code></pre>
+<pre><code>##  language print(i)
+##  language {  print(i); print(i) }
+##  language {  print(i); print(i); print(i) }
+## exiting...
+## [1] 3
+## [1] 3
+## [1] 3</code></pre>
+<p>We see that <code>on.exit</code> does not do any evaluation at all. When exiting the function, the loop has finished, the value of <code>i</code> is 3. So when R evaluated <code>print(i)</code> 3 times, it prints 3 three times. What if I want to capture the value of <code>i</code> at the time when I register the expression? According to the help page:</p>
+<blockquote>
+<p>to capture the current values in <code>expr</code> use <code>substititute</code> or similar.</p>
+</blockquote>
+<p>So, with my newly acquired knowledge of NSE, I tried this:</p>
+<pre class="r"><code>test.sys.on.exit &lt;- function() {
+
+  for (i in 1:3) {
+    # use subsitite to subsititute in the value of i
+    quoted &lt;- substitute(on.exit(expr = print(x), add = TRUE), list(x = i))
+    print(quoted)
+    eval(quoted)
+    ex &lt;- sys.on.exit()
+    str(ex)
+  }
+  cat(&quot;exiting...\n&quot;)
+}
+
+test.sys.on.exit()</code></pre>
+<pre><code>## on.exit(expr = print(1L), add = TRUE)
+## [1] 1
+##  NULL
+## on.exit(expr = print(2L), add = TRUE)
+## [1] 2
+##  NULL
+## on.exit(expr = print(3L), add = TRUE)
+## [1] 3
+##  NULL
+## exiting...</code></pre>
+<p>No good, it seems that nothing is registered on exit… Why? It turns out I can’t use <code>eval()</code> function…</p>
+<pre class="r"><code>test.sys.on.exit &lt;- function() {
+
+  eval(quote(on.exit(print(1))))
+  ex &lt;- sys.on.exit()
+  str(ex)
+
+  cat(&quot;exiting...\n&quot;)
+
+}
+test.sys.on.exit()</code></pre>
+<pre><code>## [1] 1
+##  NULL
+## exiting...</code></pre>
+<pre class="r"><code>test.sys.on.exit &lt;- function() {
+
+  mycall &lt;- call(&quot;on.exit&quot;, quote(print(quote(1))))
+  print(mycall)
+  eval(mycall)
+  ex &lt;- sys.on.exit()
+  str(ex)
+
+  cat(&quot;exiting...\n&quot;)
+
+}
+test.sys.on.exit()</code></pre>
+<pre><code>## on.exit(print(quote(1)))
+## [1] 1
+##  NULL
+## exiting...</code></pre>
+<pre class="r"><code>test.sys.on.exit &lt;- function() {
+
+  on.exit(print(1))
+  ex &lt;- sys.on.exit()
+  str(ex)
+
+  cat(&quot;exiting...\n&quot;)
+
+}
+test.sys.on.exit()</code></pre>
+<pre><code>##  language print(1)
+## exiting...
+## [1] 1</code></pre>
+<pre class="r"><code>test.sys.on.exit &lt;- function() {
+
+  do.call(&quot;on.exit&quot;, list(expr=print(1)))
+  ex &lt;- sys.on.exit()
+  str(ex)
+
+  cat(&quot;exiting...\n&quot;)
+
+}
+test.sys.on.exit()</code></pre>
+<pre><code>## [1] 1
+##  num 1
+## exiting...</code></pre>
+<ul>
+<li>solution:</li>
+</ul>
+<pre class="r"><code>test.sys.on.exit &lt;- function() {
+
+  do.call(&quot;on.exit&quot;, list(expr=substitute(print(x), list(x = 1))))
+  ex &lt;- sys.on.exit()
+  str(ex)
+
+  cat(&quot;exiting...\n&quot;)
+
+}
+test.sys.on.exit()</code></pre>
+<pre><code>##  language print(1)
+## exiting...
+## [1] 1</code></pre>
+</div>

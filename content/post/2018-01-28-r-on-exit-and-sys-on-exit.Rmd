@@ -1,0 +1,192 @@
+---
+title: 'R: on.exit() and sys.on.exit()'
+author: ''
+date: '2018-01-28'
+slug: r-on-exit-and-sys-on-exit
+categories:
+  - R
+tags:
+  - R
+  - NSE
+draft: true
+---
+
+## Intro
+
+Often one needs to write functions not just to perform computation, but also interact with the world outside of the function execution environment, for example, writing to a file, saving plots or changing working directory. Computer scientists called these operations __side effects__, in that these functions not only perform computation, but also change some aspects of the global state of the software. To be more precise, writing to a file requires a file connection to be established, saving plots requires opening a graphical device and changing working directories affects how to find things. In these cases, you need to make sure that when you function exits, whether normally of because of an error, the global state is restored, so that other functions that depends on the global state won't be affected.
+
+`on.exit()` function comes to the rescue: it __captures__ the expression you supplied and run that expression when the function exits, whether normally or because of error. To see this in action, suppose we need to change the `digits` option to 3 during the function execution. To make sure the original option is restored on exit of the function, we can do this:
+
+```{r}
+f <- function() {
+  
+  old <- options("digits") # get original options
+  options(digits = 3) # change the option
+  on.exit(options(old)) # register on.exit handler
+
+  print(options("digits"))
+  cat("exiting...\n")
+}
+options("digits")
+f()
+options("digits")
+```
+
+So we see that the expression that we supplied, `options(old)`, to `on.exit()` got execuated on _exit_ of the function (in this case, after all codes of the function finished execution), so that the option `digits` is restored to the original value, 7. To test that the option gets restored even if an error is encountered:
+
+```r
+f <- function() {
+
+  old <- options("digits")
+  options(digits = 3)
+  on.exit(options(old))
+
+  print(options("digits"))
+  stop("unexpected error...")
+  cat("exiting...\n")
+}
+```
+
+```r
+options("digits")
+# $digits
+# [1] 3
+
+f()
+# Error in f() : unexpected error...
+options("digits")
+# $digits
+# [1] 7
+```
+
+This time, the function exits immediately when it sees the error, so `cat(exiting...\n)` was not run. However, `on.exit(options(old))` was executed before the error, so the expression `options(old)` has already been registred and we see that the `digits` option got restored on exit. Note that this does mean you need to make sure that errors can not possibly occur between changing options (`options(digits = 3)`) and registering on.exit handler (`on.exit(options(old))`), so it's a good habit to write an `on.exit` statement immediately after changing global state (see `shiny::runApp` for numerous examples).
+
+Note that at the begining, I use the bold __capture__ to stress that `on.exit()` is implemented with one of the most interesting feature of R: computing on language, or non-standard evaluation, which basically means that R has the ability to capture literally what you typed instead of evaluating what you typed.
+
+`sys.on.exit` is a useful function for us to peek into  what's registered at any point in time:
+```{r}
+test.sys.on.exit <- function() {
+
+  on.exit(print(1))
+  ex <- sys.on.exit()
+  str(ex)
+
+  cat("exiting...\n")
+}
+test.sys.on.exit()
+```
+
+The final thing a function will do, before giving control back, is the run any expression captured by `on.exit()`. This means that the expression will be evaluated __at the time__ of exit.
+
+
+Let's experiment what will happen if we put `on.exit` in a loop:
+
+```{r}
+test.sys.on.exit <- function() {
+
+  for (i in 1:3) {
+    on.exit(print(i), add = TRUE)
+    ex <- sys.on.exit()
+    str(ex)
+  }
+  cat("exiting...\n")
+
+}
+test.sys.on.exit()
+```
+
+We see that `on.exit` does not do any evaluation at all. When exiting the function, the loop has finished, the value of `i` is 3. So when R evaluated `print(i)` 3 times, it prints 3 three times. What if I want to capture the value of `i` at the time when I register the expression? According to the help page:
+
+> to capture the current values in `expr` use `substititute` or similar.
+
+So, with my newly acquired knowledge of NSE, I tried this:
+
+```{r}
+test.sys.on.exit <- function() {
+
+  for (i in 1:3) {
+    # use subsitite to subsititute in the value of i
+    quoted <- substitute(on.exit(expr = print(x), add = TRUE), list(x = i))
+    print(quoted)
+    eval(quoted)
+    ex <- sys.on.exit()
+    str(ex)
+  }
+  cat("exiting...\n")
+}
+
+test.sys.on.exit()
+```
+
+No good, it seems that nothing is registered on exit... Why? It turns out I can't use `eval()` function...
+
+```{r}
+test.sys.on.exit <- function() {
+
+  eval(quote(on.exit(print(1))))
+  ex <- sys.on.exit()
+  str(ex)
+
+  cat("exiting...\n")
+
+}
+test.sys.on.exit()
+```
+
+```{r}
+test.sys.on.exit <- function() {
+
+  mycall <- call("on.exit", quote(print(quote(1))))
+  print(mycall)
+  eval(mycall)
+  ex <- sys.on.exit()
+  str(ex)
+
+  cat("exiting...\n")
+
+}
+test.sys.on.exit()
+```
+
+```{r}
+test.sys.on.exit <- function() {
+
+  on.exit(print(1))
+  ex <- sys.on.exit()
+  str(ex)
+
+  cat("exiting...\n")
+
+}
+test.sys.on.exit()
+```
+
+
+
+
+```{r}
+test.sys.on.exit <- function() {
+
+  do.call("on.exit", list(expr=print(1)))
+  ex <- sys.on.exit()
+  str(ex)
+
+  cat("exiting...\n")
+
+}
+test.sys.on.exit()
+```
+
+- solution:
+```{r}
+test.sys.on.exit <- function() {
+
+  do.call("on.exit", list(expr=substitute(print(x), list(x = 1))))
+  ex <- sys.on.exit()
+  str(ex)
+
+  cat("exiting...\n")
+
+}
+test.sys.on.exit()
+```
