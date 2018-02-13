@@ -1,0 +1,456 @@
+---
+title: 'Learn Deep Learning 1: logistic regression with a neural netwrok mindset from scratch in R'
+author: ''
+date: '2018-02-10'
+slug: deep-learning-neural-network-from-scratch-in-r
+categories:
+  - Deep Learning
+tags:
+  - deeplearning.ai
+  - Statistics
+  - R
+output:
+  blogdown::html_page:
+    toc: true
+---
+
+
+<div id="TOC">
+<ul>
+<li><a href="#intro">Intro</a></li>
+<li><a href="#data-preparation">Data Preparation</a></li>
+<li><a href="#logistic-regression">Logistic Regression</a><ul>
+<li><a href="#forward-propagation">Forward Propagation</a></li>
+<li><a href="#backward-propagation">Backward Propagation</a></li>
+<li><a href="#implementation">Implementation</a></li>
+<li><a href="#train-model">Train Model</a></li>
+<li><a href="#understand-the-result">Understand the Result</a></li>
+</ul></li>
+<li><a href="#summary">Summary</a></li>
+</ul>
+</div>
+
+<div id="intro" class="section level2">
+<h2>Intro</h2>
+<p>With online courses, I feel I am usually too rushed to complete them for at least two reasons:</p>
+<ul>
+<li>Save money because I pay a monthly fee.</li>
+<li>Eager to get a certificate so I can overestimate myself.</li>
+</ul>
+<p>So this time I think perhaps I should pause and let it precipitate.</p>
+<p>I recently rushed through a cousera course <a href="https://www.coursera.org/learn/neural-networks-deep-learning">Neural Networks and Deep Learning</a>. What’s most amazing about this course, in my opinion, is that it teaches you to build a neural network model in python, <strong>from ground up</strong>. I did a few statistic courses before and I have never needed to write an algorithm from ground up. All I did was calling <code>glm()</code> or some other modelling functions already there and they do the fitting for me. To make sure I internalize the ideas and the algorithm, I am writing this post to implement a neural network in R (I can’t put python source code online as per course requirement.)</p>
+<p>Perhaps the most difficult part in this course is to get my head around the different conventions between statistics and computer science. For example, in almost all statistics literature, the data matrix, <span class="math inline">\(X\)</span>, is organized so that it has <span class="math inline">\(N\)</span> rows and <span class="math inline">\(p\)</span> columns, where <span class="math inline">\(N\)</span> is the sample size and p is number of coefficients (or features plus one). In deep learning, it’s the opposite, the data matrix is <span class="math inline">\(p\)</span> by <span class="math inline">\(N\)</span>, <span class="math inline">\(p\)</span> rows, <span class="math inline">\(N\)</span> columns. Some other nitty-gritty details: sample size is represented by <span class="math inline">\(m\)</span> rather than <span class="math inline">\(N\)</span>, number of features by <span class="math inline">\(n_x\)</span> rather than <span class="math inline">\(p\)</span>, etc. It’s these little things that caused a somewhat big cognitive barrier initially. Here I decided to follow the traditional statistics convention, just to make sure I really internalize the <strong>idea</strong> rather than the <strong>formula</strong>.</p>
+</div>
+<div id="data-preparation" class="section level2">
+<h2>Data Preparation</h2>
+<p>I am using the same datasets that were used in the online course, which you can find them <a href="/datasets">here</a>.</p>
+<pre class="r"><code>library(h5)
+library(dplyr)
+library(imager)
+library(tidyr)
+library(ggplot2)
+library(stringr)
+
+train_set_orig &lt;- h5file(&quot;../../static/datasets/train_catvnoncat.h5&quot;)
+test_set_orig &lt;- h5file(&quot;../../static/datasets/test_catvnoncat.h5&quot;)
+
+train_set_x_orig &lt;- readDataSet(train_set_orig[&quot;train_set_x&quot;])
+train_set_y &lt;- readDataSet(train_set_orig[&quot;train_set_y&quot;])
+test_set_x_orig &lt;- readDataSet(test_set_orig[&quot;test_set_x&quot;])
+test_set_y &lt;- readDataSet(test_set_orig[&quot;test_set_y&quot;])</code></pre>
+<p>The training set contains 209 images of cats and non-cats and the test set contains 50 images. Each image is 64 pixels wide, 64 pixels high, and 3 color channels.</p>
+<p>With <code>imager</code> package, plotting is a such a pleasing thing to do. Let’s take a look at the first five images and the dimensions of the datasets:</p>
+<pre class="r"><code>train_set_plot &lt;- as.cimg(aperm(train_set_x_orig, perm = c(3, 2, 1, 4)))
+
+train_set_y[1:6]</code></pre>
+<pre><code>## [1] 0 0 1 0 0 0</code></pre>
+<pre class="r"><code>par(mfrow = c(2, 3), mai = c(0,0,0.2,0))
+for (i in 1:6) plot(train_set_plot, i, main = paste0(&quot;image &quot;, i), axes = FALSE)</code></pre>
+<p><img src="/post/2018-02-10-deep-learning-neural-network-from-scratch-in-r_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<pre class="r"><code>str(train_set_x_orig)
+##  int [1:209, 1:64, 1:64, 1:3] 17 196 82 1 9 84 56 19 63 23 ...
+str(train_set_y)
+##  num [1:209] 0 0 1 0 0 0 0 1 0 0 ...
+str(test_set_x_orig)
+##  int [1:50, 1:64, 1:64, 1:3] 158 115 255 254 96 26 239 236 19 231 ...
+str(test_set_y)
+##  num [1:50] 1 1 1 1 1 0 1 1 1 1 ...</code></pre>
+<p>Next let’s reshape the data so it’s ready for modelling - we need to <em>flatten</em> the image so that each image can be represented by a vector of dimension <span class="math inline">\(64 \times 64 \times3 = 12288\)</span>. Again, I am following traditional statistics convention, adding a leading 1 to this vector which represents the intercept, so each observation is <span class="math inline">\(p = 12288 + 1 = 12289\)</span> dimensional. After the reshaping, the training set <code>train_set_x</code> is 209 by 12289 and the leading column of <code>train_set_x</code> is a column of 1 representing the intercept. Similarly the <code>test_set_x</code> is 50 by 12289. I use aperm to keep data preparation result identical to that of python.</p>
+<pre class="r"><code>train_set_x_flatten &lt;- aperm(train_set_x_orig, c(1, 4, 3, 2))
+dim(train_set_x_flatten) &lt;- c(209, 64 * 64 * 3)
+train_set_x &lt;- cbind(1, train_set_x_flatten/255)
+dim(train_set_x)</code></pre>
+<pre><code>## [1]   209 12289</code></pre>
+<pre class="r"><code>test_set_x_flatten &lt;- aperm(test_set_x_orig, c(1, 4, 3, 2))
+dim(test_set_x_flatten) &lt;- c(50, 64 * 64 * 3)
+test_set_x &lt;- cbind(1, test_set_x_flatten/255)
+dim(test_set_x)</code></pre>
+<pre><code>## [1]    50 12289</code></pre>
+</div>
+<div id="logistic-regression" class="section level2">
+<h2>Logistic Regression</h2>
+<p>The implementation of the optimisation of the logistic regression, from a neural network’s perspective, is organized into three procedures:</p>
+<ul>
+<li>Forward propagation
+<ul>
+<li>This involves calculating the predictions and cost based on current weights (coefficients).</li>
+</ul></li>
+<li>Backward propagation.
+<ul>
+<li>This involves calculating the gradient which gives the direction in which the cost function has the steepest slope.</li>
+</ul></li>
+<li>Gradient descent
+<ul>
+<li>This involves updating the weights (coefficints) using the gradients and learn rate.</li>
+</ul></li>
+</ul>
+<p>These three procedures are repeated many times to minimise the cost function. In spirit, this is identical to maximising the likelihood function.</p>
+<p>The online course used <strong>computaional graph</strong> to reason about the algorithm and organize the computation. The computational graph breaks down the optimisation process into smaller pieces like a divide-and-conqur strategy. It also helps one to think about what intermediate values need to be cached to improve the efficiency of the algorithm. However, I wanted to have just a few equations here so I don’t need to hold too many things in my really small working memory.</p>
+<p>Again I will be following traditional statistics notations (adapted from <a href="https://web.stanford.edu/~hastie/Papers/ESLII.pdf">The Elements of Statisitcal Learning</a>): all vectors are column vectors denoted by non-bold lower case letters (e.g. <span class="math inline">\(w\)</span>), except when a vector has N (sample size) components in which case it is denoted by <strong>bold</strong> lower case letters (<span class="math inline">\(\mathbf{a}\)</span>). Elements of a vector can be accessed via subsript (e.g. <span class="math inline">\(w_j\)</span> represent the <span class="math inline">\(j^{th}\)</span> element of <span class="math inline">\(w\)</span>). Matrices are denoted by capital letters (e.g. <span class="math inline">\(X\)</span>) and elements can be accessed by <span class="math inline">\(X_{ij}\)</span>. Again, the reason for this is that I want to make sure I internalize the algorithm and a good way for doing this is to show that I can reproduce the algorithm with a different set of notations. Also this set of convention is probably more friendly to R.</p>
+<div id="forward-propagation" class="section level3">
+<h3>Forward Propagation</h3>
+<p>Now suppose the 209 data points are a simple random sample, so the joint probability distribution is simply the product of individual probability distributions, so does the joint likelihood function. Let’s start from individual data points. For the <span class="math inline">\(i^{th}\)</span> data point, the likelihood <span class="math inline">\(L_i\)</span> can be written as:</p>
+<p><span class="math display">\[
+\begin{align}
+L_i(w, b) 
+&amp; = \mathbf{p}_i^{\mathbf{y}_i}(1 - \mathbf{p}_i)^{(1 - \mathbf{y}_i)} \\
+&amp; = \mathbf{a}_i^{\mathbf{y}_i}(1 - \mathbf{a}_i)^{(1 - \mathbf{y}_i)} 
+\end{align}
+\]</span></p>
+<p>Where</p>
+<p><span class="math display">\[
+\mathbf{a}_i = \mathbf{p}_i = \sigma(\mathbf{z}_i) = \sigma(x_i^T w + b)
+\]</span></p>
+<p>In the above two equations, <span class="math inline">\(\mathbf{a}_i = \mathbf{p}_i\)</span> is the <span class="math inline">\(i^{th}\)</span> component of the activation (N-)vector, or the <em>true</em> probability of being a cat for the <span class="math inline">\(i^{th}\)</span> example. <span class="math inline">\(\mathbf{z}_i\)</span> is the linear predictor for the <span class="math inline">\(i^{th}\)</span> example (the <span class="math inline">\(i^{th}\)</span> componenet of the N-vector <span class="math inline">\(\mathbf{z}\)</span>), <span class="math inline">\(w\)</span> is a p-vector (p here means number of features) representing slope coefficients (a.k.a <em>weights</em> in deep learning), <span class="math inline">\(b\)</span> is the intercept coefficient (a.k.a <em>bias</em>), <span class="math inline">\(x_i\)</span> is a p-vector representing the observations of all features of <span class="math inline">\(i^{th}\)</span> example.</p>
+<p>Note here an interesting fact about sigmoid function which is that it’s derivative can be written as a function of the sigmoid function itself in a fairly simple form, it is this property that ends up cancelling many terms so that the slope can be calculated efficiently:</p>
+<p><span class="math display">\[
+\begin{align}
+\frac{d\mathbf{a}_i}{d\mathbf{z}_i} 
+&amp; = \frac{d\sigma(\mathbf{z}_i)}{d\mathbf{z}_i} \\
+&amp; = \frac{d}{d\mathbf{z}_i} \left( \frac{1}{1 + e^{-\mathbf{z}_i}} \right) \\
+&amp; = \frac{-1}{(1 + e^{-\mathbf{z}_i})^2} e^{-\mathbf{z}_i} (-1) \\
+&amp; = \frac{e^{-\mathbf{z}_i}}{(1 + e^{-\mathbf{z}_i})^2} \\
+&amp; = \frac{1}{1 + e^{-\mathbf{z}_i}} \frac{e^{-\mathbf{z}_i}}{1 + e^{-\mathbf{z}_i}}  \\
+&amp; = \mathbf{a}_i (1 - \mathbf{a}_i) 
+\end{align}
+\]</span></p>
+<p>This will be useful in backward propagation.</p>
+<p>If we consider all data points, we can write down a similar equation but encompass all data points. Here, I am actually going to redefine weights <span class="math inline">\(w\)</span> and data matrix <span class="math inline">\(X\)</span>: include <span class="math inline">\(b\)</span> into <span class="math inline">\(w\)</span> (i.e. <span class="math inline">\(w_1 = b\)</span>) and augment <span class="math inline">\(X\)</span> with a column of 1s as it’s first column (so the new <span class="math inline">\(X\)</span> is <span class="math inline">\(N\)</span> by <span class="math inline">\((p + 1)\)</span> and the new <span class="math inline">\(w\)</span> is a (p + 1)-vector). This results in a more elegant equation, hence less corner cases to consider when implementing the algorithm.</p>
+<p><span class="math display">\[
+\mathbf{a} = \mathbf{p} = \sigma(\mathbf{z}) = \sigma(\mathbf{X} w)
+\]</span></p>
+<p>where <span class="math inline">\(\mathbf{a} = \mathbf{p}\)</span> is a N-vector representing <em>activations</em> or the true probabilities of being a cat for each example. <span class="math inline">\(\mathbf{z}\)</span> is the linear predictor.</p>
+<p>Similarly, the likelihood, <span class="math inline">\(L(w)\)</span>, and log likelihood, <span class="math inline">\(l(w)\)</span>, for all data points can be written as</p>
+<p><span class="math display">\[
+L(w) = \prod_{i = 1}^N \left(  \mathbf{a}_i^{\mathbf{y}_i}(1 - \mathbf{a}_i)^{(1 - \mathbf{y}_i)} \right)
+\]</span></p>
+<p>and</p>
+<p><span class="math display">\[
+\begin{align}
+l(w) 
+&amp; = log\left( \prod_{i = 1}^N \left(  \mathbf{a}_i^{\mathbf{y}_i}(1 - \mathbf{a}_i)^{(1 - \mathbf{y}_i)} \right) \right) \\
+&amp; = \sum_{i = 1}^N \left( \mathbf{y}_i log(\mathbf{a}_i) + (1 - \mathbf{y}_i) log(1 - \mathbf{a}_i) \right) \\
+&amp; =  \mathbf{y}^T log(\mathbf{a}) + (\mathbf{1} - \mathbf{y})^T log(\mathbf{1} - \mathbf{a})
+\end{align}
+\]</span></p>
+<p>In deep learning, people usually use cost function as a measure of how well the estimated function fits to the data. The cost function is simply the negative of the log likelihood divided by the sample size:</p>
+<p><span class="math display">\[
+J(w)  = - \frac{1}{N} \left( \mathbf{y}^T log(\mathbf{a}) + (\mathbf{1} - \mathbf{y})^T log(\mathbf{1} - \mathbf{a}) \right)
+\]</span></p>
+</div>
+<div id="backward-propagation" class="section level3">
+<h3>Backward Propagation</h3>
+<p>The backward propagation is usually the hardest part in neural networks. It’s especially hard if you want to use proper matrix calculus to derive the equation. Fortunately, the course steps through the derivation in such a way that even you don’t know matrix algebra, you are able to arrive at the same equation. All that requires is basic matrix multiplication and scalar calculus. I tried to derive the same result using matrix calculus but no luck in getting there. If you do, do let me know!</p>
+<p>Anyway, here’s a more non-mathamatician friendly way. Let</p>
+<p><span class="math display">\[
+C_i = - \mathbf{y}_i log(\mathbf{a}_i) - (1 - \mathbf{y}_i) log(1 - \mathbf{a}_i)
+\]</span></p>
+<p>denote the cross entropy for the <span class="math inline">\(i^{th}\)</span> data point, which is simple the negative of the log likelihood for that data point (Note that <span class="math inline">\(\mathbf{y}_i\)</span> and <span class="math inline">\(\mathbf{a}_i\)</span> are both scalar). Therefore</p>
+<p><span class="math display">\[
+J(w) = \frac{1}{N}\sum_{i = 1}^{N} C_i
+\]</span></p>
+<p>For the <span class="math inline">\(i^{th}\)</span> data point and the <span class="math inline">\(j^{th}\)</span> weight, we have:</p>
+<p><span class="math display">\[
+\begin{align}
+\frac{dC_i}{dw_{j}}
+&amp; =  \frac{dC_i}{d\mathbf{a}_i} \frac{d\mathbf{a}_i}{d\mathbf{z}_i} \frac{d\mathbf{z}_i}{dw_{j}}\\
+&amp; = \left( - \frac{\mathbf{y}_i}{\mathbf{a}_i} + \frac{1 - \mathbf{y}_i}{1 - \mathbf{a}_i} \right) \mathbf{a}_i (1 - \mathbf{a}_i) x_{ij} \\
+&amp; = (\mathbf{a}_i - \mathbf{y}_i) x_{ij}
+\end{align}
+\]</span></p>
+<p>Generalise the above equation to the cost function <span class="math inline">\(J\)</span> with matrix notation, we have:</p>
+<p><span class="math display">\[
+\begin{align}
+\frac{dJ}{dw_{j}}
+&amp; = \frac{1}{N}\sum_{i = 1}^{N} \frac{dC_i}{dw_j} \\
+&amp; = \frac{1}{N} \sum_{i = 1}^{N} \left( (\mathbf{a}_i - \mathbf{y}_i) x_{ij} \right) \\
+&amp; = \frac{1}{N} (\mathbf{a} - \mathbf{y})^T \mathbf{x}_j 
+\end{align}
+\]</span></p>
+<p>And further generalize the above equation to all weights:</p>
+<p><span class="math display">\[
+\begin{align}
+\frac{dJ}{dw}
+&amp; = \begin{bmatrix} \frac{dJ}{dw_1} \\ \frac{dJ}{dw2} \\ . \\ .\\ .\\ \frac{dJ}{dw_p} \end{bmatrix} \\
+&amp; = \frac{1}{N} \begin{bmatrix} (\mathbf{a} - \mathbf{y})^T \mathbf{x}_1  \\ (\mathbf{a} - \mathbf{y})^T \mathbf{x}_2 \\ . \\ .\\ .\\ (\mathbf{a} - \mathbf{y})^T \mathbf{x}_3 \end{bmatrix} \\
+&amp; = \frac{1}{N} \begin{bmatrix} (\mathbf{a} - \mathbf{y})^T \mathbf{x}_1 &amp; (\mathbf{a} - \mathbf{y})^T \mathbf{x}_2 &amp; ... &amp; (\mathbf{a} - \mathbf{y})^T \mathbf{x}_3 \end{bmatrix}^T \\
+&amp; = \frac{1}{N} \left((\mathbf{a} - \mathbf{y})^T X \right)^T \\
+&amp; = \frac{1}{N} X^T (\mathbf{a} - \mathbf{y}) 
+\end{align}
+\]</span></p>
+<p>So, that’s all the math that’s required. I tried to write down those equations in matrix or vector notation because being able to write down an equation in matrix form means being able to take advantage of vectorization. As a side note, given that there is no scalar in R, it feels that vectorization comes as a free lunch!</p>
+</div>
+<div id="implementation" class="section level3">
+<h3>Implementation</h3>
+<p>The equations are the key, implementation is really straight forward once we have the equations written down in matrix notation. The logic is simple:</p>
+<ol style="list-style-type: decimal">
+<li><p>we initialize weights, say initialize to zeros;</p></li>
+<li><p>do a forward propagation, i.e., calculating the predictions and cost based on the current weights;</p></li>
+<li><p>do a backward propagation, i.e. calculating the gradients;</p></li>
+<li><p>update the weights by moving them down the steepest slope. A better-known term for this is: <strong>Gradient descent</strong>;</p></li>
+<li><p>repeat the step 2 - 4 a lot of times until the algorithm converges or stop early as a sort of “regulariztion” (prevent overfitting).</p></li>
+</ol>
+<p>Let’s modularise the above steps so the code is cleaner and hopefully reusable:</p>
+<ul>
+<li>define a helper function, sigmoid, which is the term in deep learning for inverse logit function:</li>
+</ul>
+<pre class="r"><code>sigmoid &lt;- function(x) {
+  1 / (1 + exp(-x))
+}</code></pre>
+<ul>
+<li>forward propagation function (so easy!)</li>
+</ul>
+<pre class="r"><code>forward_propagation &lt;- function(X, w, activation = sigmoid) {
+  activation(X %*% w)
+}</code></pre>
+<ul>
+<li>compute cost (still easy)</li>
+</ul>
+<pre class="r"><code>compute_cost &lt;- function(y, a, N = length(y)) {
+  -(1 / N) * (sum(y * log(a)) + sum((1 - y) * log(1 - a)))
+}</code></pre>
+<ul>
+<li>backward propagation function (can’t be easier)</li>
+</ul>
+<pre class="r"><code>backward_propagation &lt;- function(X, y, a, N = length(y)) {
+  (1/N) * crossprod(X, a - y)
+}</code></pre>
+<ul>
+<li>update weights (should I write this as a function?)</li>
+</ul>
+<pre class="r"><code>update_grads &lt;- function(w, dw, learn_rate) {
+  w - learn_rate * dw
+}</code></pre>
+<p>Having written down the above functions, let’s compose them together. The function below may seem a little messy, but that’s because I am basically recording all intermediate results for every single iteration, so that I can better understand what the algorithm is doing.</p>
+<ul>
+<li>Model function</li>
+</ul>
+<pre class="r"><code>logistic_model &lt;- function(X, y, X_test, y_test, learn_rate, iter) {
+  
+  # sample size and number of features
+  N &lt;- nrow(X)
+  N_test &lt;- nrow(X_test)
+  p &lt;- ncol(X)
+  
+  # initialize weights
+  w &lt;- matrix(NA, nrow = iter + 1, ncol = p)
+  w[1, ] &lt;- 0
+  
+  # initialize dw as a matrix to record gradients from every iteration
+  dw &lt;- matrix(NA, nrow = iter, ncol = p)
+  
+  # initialize activations, predictions, accuracy rates for training set
+  a_train &lt;- matrix(NA, nrow = iter, ncol = N)
+  pred_train &lt;- matrix(NA, nrow = iter, ncol = N)
+  accuracy_train &lt;- numeric(iter)
+  
+  # initialize activations, predictions, accuracy rates for test set
+  a_test &lt;- matrix(NA, nrow = iter, ncol = N_test)
+  pred_test &lt;- matrix(NA, nrow = iter, ncol = N_test)
+  accuracy_test &lt;- numeric(iter)
+  
+  # initialize cost
+  J &lt;- numeric(iter)
+  
+  
+  # main iterations
+  for (i in 1:iter) {
+    
+    # forward propagation to get current activations, predictions 
+    # and accuracy rate for both train and test
+    a_train[i, ] &lt;- forward_propagation(X, w[i, ]) 
+    pred_train[i, ] &lt;- ifelse(a_train[i, ] &gt; 0.5, 1, 0)
+    accuracy_train[i] &lt;- mean(pred_train[i, ] == y)
+    
+    a_test[i, ] &lt;- forward_propagation(X_test, w[i, ]) 
+    pred_test[i, ] &lt;- ifelse(a_test[i, ] &gt; 0.5, 1, 0)
+    accuracy_test[i] &lt;- mean(pred_test[i, ] == y_test)
+    
+    # compute cost for the current iteration
+    J[i] &lt;- compute_cost(y, a_train[i, ], N = N) 
+    
+    # backward propagation to get gradients
+    dw[i, ] &lt;- backward_propagation(X, y, a_train[i, ], N = N) 
+    
+    # update gradients (gradient descent)
+    w[i + 1, ] &lt;- update_grads(w[i, ], dw[i, ], learn_rate = learn_rate)
+    
+  }
+  
+  list(a_train = a_train,
+       a_test = a_test,
+       pred_train = pred_train,
+       pred_test = pred_test,
+       accuracy_train = accuracy_train,
+       accuracy_test = accuracy_test,
+       J = J,
+       dw = dw,
+       w = w)
+}</code></pre>
+</div>
+<div id="train-model" class="section level3">
+<h3>Train Model</h3>
+<p>Learning rate is perhaps the single most important hyperparameters in this simple model. Let’s train the model with learning rates 0.0005, 0.005, 0.05 and 0.5 for 2000 iterations:</p>
+<pre class="r"><code>lr_0005 &lt;- logistic_model(X = train_set_x, y = train_set_y, X_test = test_set_x, y_test = test_set_y, learn_rate = 0.0005, iter = 2000)
+
+lr_005 &lt;- logistic_model(X = train_set_x, y = train_set_y, X_test = test_set_x, y_test = test_set_y, learn_rate = 0.005, iter = 2000)
+
+lr_05 &lt;- logistic_model(X = train_set_x, y = train_set_y, X_test = test_set_x, y_test = test_set_y, learn_rate = 0.05, iter = 2000)
+
+lr_5 &lt;- logistic_model(X = train_set_x, y = train_set_y, X_test = test_set_x, y_test = test_set_y, learn_rate = 0.5, iter = 2000)</code></pre>
+</div>
+<div id="understand-the-result" class="section level3">
+<h3>Understand the Result</h3>
+<p>As mentioned above, the whole purpose of this exercise is to better understand what the algorithm is doing, so let’s examine the results in detail. First, let’s check the evolution of the cost function:</p>
+<pre class="r"><code>par(mfrow = c(2,2))
+plot(lr_0005$J, type = &quot;l&quot;, lwd = 1, col = &quot;green&quot;, ylim = 0:1, 
+     xlab = &quot;iteration&quot;, ylab = &quot;cost&quot;, main = &quot;Learn rate = 0.0005&quot;)
+plot(lr_005$J, type = &quot;l&quot;, lwd = 1, col = &quot;orange&quot;, ylim = 0:1, 
+     xlab = &quot;iteration&quot;, ylab = &quot;cost&quot;, main = &quot;Learn rate = 0.005&quot;)
+plot(lr_05$J, type = &quot;l&quot;, lwd = 1, col = &quot;red&quot;,
+     xlab = &quot;iteration&quot;, ylab = &quot;cost&quot;, main = &quot;Learn rate = 0.05&quot;)
+plot(lr_5$J, type = &quot;l&quot;, lwd = 1, col = &quot;black&quot;,
+     xlab = &quot;iteration&quot;, ylab = &quot;cost&quot;, main = &quot;Learn rate = 0.5&quot;)</code></pre>
+<p><img src="/post/2018-02-10-deep-learning-neural-network-from-scratch-in-r_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
+<p>This is interesting, in the first three cases (learn rate = 0.0005, 0.005, 0.05) the cost function eventually goes down, but for the two cases where learn rates equal to 0.005 and 0.05, the cost initially bumps up and down quite dramatically. I think this is because the learn rate is too big - the gradient descent strides too big steps and it’s stepping over the optimal point back and forth initially, until it luckily hits a point where the gradient is very close to zero and it no longer stride large steps. Take away? Always check the cost/iteration graph to make sure that your cost stabilise eventually! In fact, the online course used the learn rate of 0.005, which corresponds to the second plot above. It oscillates a little bit initially but stablises quickly after less than 500 iterations. It’s not a bad choice: selecting a lower learn rate (say 0.0005) means your algorithm takes longer to get to the same cost, on the other hand, selecting a higher learn rate (say 0.5, the bottom right graph) means you risk numerical issues (explained later). Also worthnoting is that in this particular case, if we keep iterating with a sensible learn rate, we will eventually end up with a perfect fit because we have more features than data points.</p>
+<p>Cost function is mainly a function of activations, so it must be that the activations are causing the cost function to jump up and down. Let’s check how activations, the estimated probabilities of being a cat, evolves. Since plotting all 209 data points is just a mess, I am plotting the first 50 training examples:</p>
+<pre class="r"><code>par(mfrow = c(2, 2))
+matplot(lr_0005$a_train[, 1:50], type = &quot;l&quot;, lty = 1, xlab = &quot;Iteration&quot;, ylab = &quot;Activation&quot;, main = &quot;learn rate = 0.0005&quot;)
+matplot(lr_005$a_train[, 1:50], type = &quot;l&quot;, lty = 1, xlab = &quot;Iteration&quot;, ylab = &quot;Activation&quot;, main = &quot;learn rate = 0.005&quot;)
+matplot(lr_05$a_train[, 1:50], type = &quot;l&quot;, lty = 1, xlab = &quot;Iteration&quot;, ylab = &quot;Activation&quot;, main = &quot;learn rate = 0.05&quot;)
+matplot(lr_5$a_train[, 1:50], type = &quot;l&quot;, lty = 1, xlab = &quot;Iteration&quot;, ylab = &quot;Activation&quot;, main = &quot;learn rate = 0.5&quot;)</code></pre>
+<p><img src="/post/2018-02-10-deep-learning-neural-network-from-scratch-in-r_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
+<p>So the above four graphs are the evidence that activations are the culprit for causing the cost function to jump up and down. Also, it’s clear that with higher learn rate, activations (or the estiamted probabilities for being a cat) quickly coverges to either 1 or 0. It’s overfitting, for learn rate = 0.5, after 2000 iterations, the activations are basically identical to the training labels:</p>
+<pre class="r"><code>range(lr_5$a_train[2000, ] - train_set_y)</code></pre>
+<pre><code>## [1] -0.001764490  0.006920968</code></pre>
+<p>In fact, for learn rate = 0.5, some activations are so close to 1 that <code>1 - a</code> is so close to zero that R thinks <code>log(1 - a)</code> is NaN, hence the cost cannot be properly computed and the cost evolution for learn rate = 0.5 is not showing properly.</p>
+<p>Activation is a function of weights, so it must be that the weights jumps up and down initially for large learn rates. let’s check how the weights evolves. For simplicity, I am justing displaying a random sample 10 weights from the 12289 weights:</p>
+<pre class="r"><code>par(mfrow = c(2, 2))
+set.seed(123)
+sample_weights &lt;- sample(12289, 10)
+matplot(lr_0005$w[, sample_weights], type = &quot;l&quot;, lty = 1, lwd = 1, xlab = &quot;Iteration&quot;, ylab = &quot;weights&quot;, main = &quot;Learn rate = 0.0005&quot;)
+matplot(lr_005$w[, sample_weights], type = &quot;l&quot;,  lty = 1,lwd = 1, xlab = &quot;Iteration&quot;, ylab = &quot;weights&quot;, main = &quot;Learn rate = 0.005&quot;)
+matplot(lr_05$w[, sample_weights], type = &quot;l&quot;, lty = 1, lwd = 1, xlab = &quot;Iteration&quot;, ylab = &quot;weights&quot;, main = &quot;Learn rate = 0.05&quot;)
+matplot(lr_5$w[, sample_weights], type = &quot;l&quot;, lty = 1, lwd = 1, xlab = &quot;Iteration&quot;, ylab = &quot;weights&quot;, main = &quot;Learn rate = 0.5&quot;)</code></pre>
+<p><img src="/post/2018-02-10-deep-learning-neural-network-from-scratch-in-r_files/figure-html/unnamed-chunk-15-1.png" width="672" /></p>
+<p>Yes, the weights were not stable for large learn rates: the gradient descent takes too big steps so for a particular weight, it is stepping back and forth, unitl is slowing moves towards a more flat region. Next, check the evoluation of accuracy on both train and test sets:</p>
+<pre class="r"><code>par(mfrow = c(2, 2))
+plot(lr_0005$accuracy_train, type = &quot;l&quot;, col = &quot;red&quot;, ylim = c(0, 1),
+     xlab = &quot;Iteration&quot;, ylab = &quot;Accuracy rate&quot;, main = &quot;learn rate = 0.0005&quot;)
+lines(lr_0005$accuracy_test, type = &quot;l&quot;, col = &quot;green&quot;)
+plot(lr_005$accuracy_train, type = &quot;l&quot;, col = &quot;red&quot;, ylim = c(0, 1),
+     xlab = &quot;Iteration&quot;, ylab = &quot;Accuracy rate&quot;, main = &quot;learn rate = 0.005&quot;)
+lines(lr_005$accuracy_test, type = &quot;l&quot;, col = &quot;green&quot;)
+plot(lr_05$accuracy_train, type = &quot;l&quot;, col = &quot;red&quot;, ylim = c(0, 1),
+     xlab = &quot;Iteration&quot;, ylab = &quot;Accuracy rate&quot;, main = &quot;learn rate = 0.05&quot;)
+lines(lr_05$accuracy_test, type = &quot;l&quot;, col = &quot;green&quot;)
+plot(lr_5$accuracy_train, type = &quot;l&quot;, col = &quot;red&quot;, ylim = c(0, 1),
+     xlab = &quot;Iteration&quot;, ylab = &quot;Accuracy rate&quot;, main = &quot;learn rate = 0.5&quot;)
+lines(lr_5$accuracy_test, type = &quot;l&quot;, col = &quot;green&quot;)
+legend(&quot;bottomright&quot;, col = c(&quot;red&quot;, &quot;green&quot;), lty = 1, legend = c(&quot;train&quot;, &quot;test&quot;))</code></pre>
+<p><img src="/post/2018-02-10-deep-learning-neural-network-from-scratch-in-r_files/figure-html/unnamed-chunk-16-1.png" width="672" /></p>
+<p>Again, we see that for bigger learn rates, the accuracy rates are quite volatile, on both train and test set, initally (learn rate is so big that for each iteration, the activations goes up and down by a large amount), and the accuracy rate on the test set seems to be going down after it stablises, overfitting in action.</p>
+<p>For the model with smallest learn rate (0.0005), the accuracy rate on the test set goes up steadily, it starts at 0.34, which is the proportion of non cat in the test set:</p>
+<pre class="r"><code>mean(test_set_y == 0)</code></pre>
+<pre><code>## [1] 0.34</code></pre>
+<p>This is expected because we initialised weights to be all zeros, which means the activations for the first pass are <span class="math inline">\(\mathbf{a}_i = \sigma(x_i^Tw_i) = \sigma(X_i^T0) = \frac{1}{1 + e^{-0}} = 0.5\)</span>. Since 0.5 is not greater than 0.5, the predictions are basically all 0s.</p>
+<p>It turns out that learn rate equal to 0.005 gives best performance out of the three learn rates: The test performance stablises to 0.68, reaching more than 70% if stopping early. Note that the null model (predicting cats no matter what) actually gives 66% accuracy on this test set. So it’s not a big improvement and we need more test examples to make firmer conclusions.</p>
+<p>we can also check the how false positive rate (non-cat being incorrectly classified as cat) and false negative rate evolves (cat being incorrectly classified as non-cat), for both train and test sets:</p>
+<pre class="r"><code>fp_and_fn &lt;- function(model) {
+  main &lt;- deparse(substitute(model))
+  fp_train &lt;- rowMeans(model$pred_train[, train_set_y == 0])
+  fn_train &lt;- 1 - rowMeans(model$pred_train[, train_set_y == 1])
+  fp_test &lt;- rowMeans(model$pred_test[, test_set_y == 0])
+  fn_test &lt;- 1 - rowMeans(model$pred_test[, test_set_y == 1])
+  
+  plot(fp_train, type = &quot;l&quot;, col = &quot;red&quot;, ylim = 0:1, ylab = &quot;Error rate&quot;, 
+       main = paste0(main, &quot; train&quot;))
+  lines(fn_train, col = &quot;green&quot;)
+  plot(fp_test, type = &quot;l&quot;, col = &quot;red&quot;, ylim = 0:1, ylab = &quot;&quot;,
+       main = paste0(main, &quot; test&quot;))
+  lines(fn_test, col = &quot;green&quot;)
+}
+
+par(mfrow = c(4, 2), mai = c(0.25,0.5,0.25,0))
+fp_and_fn(lr_0005); fp_and_fn(lr_005); fp_and_fn(lr_05); fp_and_fn(lr_5)
+legend(&quot;topright&quot;, col = c(&quot;red&quot;, &quot;green&quot;), legend = c(&quot;False positive&quot;, &quot;False negative&quot;), lty = 1, cex = 0.8)</code></pre>
+<p><img src="/post/2018-02-10-deep-learning-neural-network-from-scratch-in-r_files/figure-html/unnamed-chunk-18-1.png" width="672" /></p>
+<p>Finally, let’s check how the predictions evolves. I am only doing this on the test set. First define a helper function that plots both predictions and activations:</p>
+<pre class="r"><code>model_evolution &lt;- function(model, alpha = 1) {
+  p &lt;- model$a_test %&gt;% 
+    as.data.frame() %&gt;% 
+    setNames(paste0(&quot;V&quot;, str_pad(1:50, width = 2, pad = 0), &quot;: &quot;, if_else(test_set_y == 1, &quot;cat&quot;, &quot;non-cat&quot;))) %&gt;% 
+    mutate(Iteration = 1:2000) %&gt;%  
+    gather(key = &quot;Example&quot;, value = &quot;Activation&quot;, -Iteration) %&gt;% 
+    left_join(
+      model$pred_test %&gt;% 
+        as.data.frame() %&gt;% 
+        setNames(paste0(&quot;V&quot;, str_pad(1:50, width = 2, pad = 0), &quot;: &quot;, if_else(test_set_y == 1, &quot;cat&quot;, &quot;non-cat&quot;))) %&gt;% 
+        mutate(Iteration = 1:2000) %&gt;%  
+        gather(key = &quot;Example&quot;, value = &quot;Prediction&quot;, -Iteration),
+      by = c(&quot;Example&quot;, &quot;Iteration&quot;)
+      
+    ) %&gt;% 
+    gather(key = &quot;outcome&quot;, value = &quot;value&quot;, Activation, Prediction) %&gt;% 
+    # mutate(Example = factor(Example, levels = paste0(&quot;V&quot;, 1:50, sep = &quot;&quot;))) %&gt;% 
+    ggplot(aes(Iteration, value, group = outcome, color = outcome)) + 
+    geom_line(alpha = alpha) +  
+    facet_wrap(facets = ~Example, nrow = 10, ncol = 5) + 
+    theme_void() +
+    theme(strip.background = element_blank(), 
+          strip.switch.pad.grid = unit(0, &quot;cm&quot;),
+          strip.text.x = element_text(size = 8),
+          panel.background = element_rect(fill = &quot;white&quot;, colour = &quot;grey50&quot;),
+          panel.border = element_rect(fill = NA, color = &quot;black&quot;),
+          axis.text = element_blank(),
+          axis.ticks = element_blank()
+          ) 
+  
+  print(p)
+}</code></pre>
+<ul>
+<li>For learn rate equal to 0.0005</li>
+</ul>
+<pre class="r"><code>model_evolution(lr_0005) </code></pre>
+<p><img src="/post/2018-02-10-deep-learning-neural-network-from-scratch-in-r_files/figure-html/unnamed-chunk-20-1.png" width="960" /></p>
+<ul>
+<li>learn rate = 0.005</li>
+</ul>
+<pre class="r"><code>model_evolution(lr_005, 0.5)</code></pre>
+<p><img src="/post/2018-02-10-deep-learning-neural-network-from-scratch-in-r_files/figure-html/unnamed-chunk-21-1.png" width="960" /></p>
+<ul>
+<li>learn rate 0.05</li>
+</ul>
+<pre class="r"><code>model_evolution(lr_05, 0.5)</code></pre>
+<p><img src="/post/2018-02-10-deep-learning-neural-network-from-scratch-in-r_files/figure-html/unnamed-chunk-22-1.png" width="960" /></p>
+<ul>
+<li>learn rate 0.5</li>
+</ul>
+<pre class="r"><code>model_evolution(lr_5, 0.5)</code></pre>
+<p><img src="/post/2018-02-10-deep-learning-neural-network-from-scratch-in-r_files/figure-html/unnamed-chunk-23-1.png" width="960" /></p>
+</div>
+</div>
+<div id="summary" class="section level2">
+<h2>Summary</h2>
+<p>It feels pretty satisfactory to write the algorithm from scrach and implement it using nothing but base R code. Although I should realize that this is simply doing what all those great packages doing, in a much more clumsy way. But, sometimes, you don’t really understand until you do it youself.</p>
+</div>

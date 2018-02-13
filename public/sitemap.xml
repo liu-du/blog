@@ -3,6 +3,16 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
+    <loc>/2018/02/10/deep-learning-neural-network-from-scratch-in-r/</loc>
+    <lastmod>2018-02-10T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/2018/01/28/r-on-exit-and-sys-on-exit/</loc>
+    <lastmod>2018-01-28T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
     <loc>/2018/01/27/statistical-learning-cross-validation/</loc>
     <lastmod>2018-01-27T00:00:00+00:00</lastmod>
   </url>
@@ -39,26 +49,44 @@
   </url>
   
   <url>
+    <loc>/categories/deep-learning/</loc>
+    <lastmod>2018-02-10T00:00:00+00:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>/tags/deeplearning.ai/</loc>
+    <lastmod>2018-02-10T00:00:00+00:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>/tags/nse/</loc>
+    <lastmod>2018-01-28T00:00:00+00:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
     <loc>/post/</loc>
-    <lastmod>2018-01-27T00:00:00+00:00</lastmod>
+    <lastmod>2018-02-10T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
     <loc>/tags/r/</loc>
-    <lastmod>2018-01-07T00:00:00+00:00</lastmod>
+    <lastmod>2018-02-10T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
     <loc>/categories/r/</loc>
-    <lastmod>2018-01-07T00:00:00+00:00</lastmod>
+    <lastmod>2018-01-28T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
     <loc>/</loc>
-    <lastmod>2018-01-27T00:00:00+00:00</lastmod>
+    <lastmod>2018-02-10T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   
@@ -76,7 +104,7 @@
   
   <url>
     <loc>/tags/statistics/</loc>
-    <lastmod>2018-01-27T00:00:00+00:00</lastmod>
+    <lastmod>2018-02-10T00:00:00+00:00</lastmod>
     <priority>0</priority>
   </url>
   

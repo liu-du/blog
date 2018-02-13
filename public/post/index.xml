@@ -6,10 +6,29 @@
     <description>Recent content in Posts on R | Data science | Visualisation</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sat, 27 Jan 2018 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Sat, 10 Feb 2018 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/post/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Learn Deep Learning 1: logistic regression with a neural netwrok mindset from scratch in R</title>
+      <link>/2018/02/10/deep-learning-neural-network-from-scratch-in-r/</link>
+      <pubDate>Sat, 10 Feb 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/2018/02/10/deep-learning-neural-network-from-scratch-in-r/</guid>
+      <description>IntroData PreparationLogistic RegressionForward PropagationBackward PropagationImplementationTrain ModelUnderstand the ResultSummaryIntroWith online courses, I feel I am usually too rushed to complete them for at least two reasons:
+Save money because I pay a monthly fee.Eager to get a certificate so I can overestimate myself.So this time I think perhaps I should pause and let it precipitate.</description>
+    </item>
+    
+    <item>
+      <title>R: on.exit() and sys.on.exit()</title>
+      <link>/2018/01/28/r-on-exit-and-sys-on-exit/</link>
+      <pubDate>Sun, 28 Jan 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/2018/01/28/r-on-exit-and-sys-on-exit/</guid>
+      <description>IntroOften one needs to write functions not just to perform computation, but also interact with the world outside of the function execution environment, for example, writing to a file, saving plots or changing working directory. Computer scientists called these operations side effects, in that these functions not only perform computation, but also change some aspects of the global state of the software. To be more precise, writing to a file requires a file connection to be established, saving plots requires opening a graphical device and changing working directories affects how to find things.</description>
+    </item>
     
     <item>
       <title>Statistical Learning: Cross Validation wrong and right way</title>

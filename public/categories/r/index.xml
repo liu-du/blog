@@ -6,10 +6,19 @@
     <description>Recent content in R on R | Data science | Visualisation</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sun, 07 Jan 2018 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Sun, 28 Jan 2018 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/categories/r/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>R: on.exit() and sys.on.exit()</title>
+      <link>/2018/01/28/r-on-exit-and-sys-on-exit/</link>
+      <pubDate>Sun, 28 Jan 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/2018/01/28/r-on-exit-and-sys-on-exit/</guid>
+      <description>IntroOften one needs to write functions not just to perform computation, but also interact with the world outside of the function execution environment, for example, writing to a file, saving plots or changing working directory. Computer scientists called these operations side effects, in that these functions not only perform computation, but also change some aspects of the global state of the software. To be more precise, writing to a file requires a file connection to be established, saving plots requires opening a graphical device and changing working directories affects how to find things.</description>
+    </item>
     
     <item>
       <title>R: Setting options</title>
