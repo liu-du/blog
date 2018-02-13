@@ -43,7 +43,7 @@ output:
 </div>
 <div id="data-preparation" class="section level2">
 <h2>Data Preparation</h2>
-<p>I am using the same datasets that were used in the online course, which you can find them <a href="/datasets">here</a>.</p>
+<p>I am using the same datasets that were used in the online course, which you can find them <a href="https://github.com/liu-du/blog/tree/master/static/datasets">here</a>.</p>
 <pre class="r"><code>library(h5)
 library(dplyr)
 library(imager)
@@ -75,7 +75,7 @@ str(test_set_x_orig)
 ##  int [1:50, 1:64, 1:64, 1:3] 158 115 255 254 96 26 239 236 19 231 ...
 str(test_set_y)
 ##  num [1:50] 1 1 1 1 1 0 1 1 1 1 ...</code></pre>
-<p>Next let’s reshape the data so it’s ready for modelling - we need to <em>flatten</em> the image so that each image can be represented by a vector of dimension <span class="math inline">\(64 \times 64 \times3 = 12288\)</span>. Again, I am following traditional statistics convention, adding a leading 1 to this vector which represents the intercept, so each observation is <span class="math inline">\(p = 12288 + 1 = 12289\)</span> dimensional. After the reshaping, the training set <code>train_set_x</code> is 209 by 12289 and the leading column of <code>train_set_x</code> is a column of 1 representing the intercept. Similarly the <code>test_set_x</code> is 50 by 12289. I use aperm to keep data preparation result identical to that of python.</p>
+<p>Next let’s reshape the data so it’s ready for modelling - we need to <em>flatten</em> the image so that each image can be represented by a vector of dimension <span class="math inline">\(64 \times 64 \times3 = 12288\)</span>. Again, I am following traditional statistics convention, adding a leading 1 to this vector which represents the intercept, so each observation is <span class="math inline">\(p = 12288 + 1 = 12289\)</span> dimensional. After the reshaping, the training set <code>train_set_x</code> is 209 by 12289 and the leading column of <code>train_set_x</code> is a column of 1 representing the intercept. Similarly the <code>test_set_x</code> is 50 by 12289. I use <code>aperm</code> to keep data preparation result identical to that of python.</p>
 <pre class="r"><code>train_set_x_flatten &lt;- aperm(train_set_x_orig, c(1, 4, 3, 2))
 dim(train_set_x_flatten) &lt;- c(209, 64 * 64 * 3)
 train_set_x &lt;- cbind(1, train_set_x_flatten/255)

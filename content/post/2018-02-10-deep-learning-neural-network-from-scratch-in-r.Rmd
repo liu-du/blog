@@ -31,7 +31,7 @@ Perhaps the most difficult part in this course is to get my head around the diff
 
 ## Data Preparation
 
-I am using the same datasets that were used in the online course, which you can find them [here](/datasets).
+I am using the same datasets that were used in the online course, which you can find them [here](https://github.com/liu-du/blog/tree/master/static/datasets).
 
 ```{r message=FALSE, warning=FALSE}
 library(h5)
@@ -70,7 +70,7 @@ str(test_set_x_orig)
 str(test_set_y)
 ```
 
-Next let's reshape the data so it's ready for modelling - we need to _flatten_ the image so that each image can be represented by a vector of dimension $64 \times 64 \times3 = 12288$.  Again, I am following traditional statistics convention, adding a leading 1 to this vector which represents the intercept, so each observation is $p = 12288 + 1 = 12289$ dimensional. After the reshaping, the training set `train_set_x` is 209 by 12289 and the leading column of `train_set_x` is a column of 1 representing the intercept. Similarly the `test_set_x` is 50 by 12289. I use aperm to keep data preparation result identical to that of python.
+Next let's reshape the data so it's ready for modelling - we need to _flatten_ the image so that each image can be represented by a vector of dimension $64 \times 64 \times3 = 12288$.  Again, I am following traditional statistics convention, adding a leading 1 to this vector which represents the intercept, so each observation is $p = 12288 + 1 = 12289$ dimensional. After the reshaping, the training set `train_set_x` is 209 by 12289 and the leading column of `train_set_x` is a column of 1 representing the intercept. Similarly the `test_set_x` is 50 by 12289. I use `aperm` to keep data preparation result identical to that of python.
 
 ```{r}
 train_set_x_flatten <- aperm(train_set_x_orig, c(1, 4, 3, 2))
