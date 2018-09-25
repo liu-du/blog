@@ -1,0 +1,280 @@
+---
+title: 'Deep Learning in R 2: compose logistic regressions == neural network'
+author: ''
+date: '2018-03-05'
+slug: deep-learning-in-r-2-compose-logistic-regressions-neural-network
+categories:
+  - Deep Learning
+tags:
+  - deeplearning.ai
+  - R
+draft: true
+output:
+  blogdown::html_page:
+    toc: true
+---
+
+
+<div id="TOC">
+<ul>
+<li><a href="#intro">Intro</a></li>
+<li><a href="#review">Review</a></li>
+<li><a href="#compose-logistic-regression">Compose logistic regression</a><ul>
+<li><a href="#forward-propagation">Forward Propagation</a></li>
+<li><a href="#backward-propagation">Backward Propagation</a></li>
+<li><a href="#iterate">Iterate</a></li>
+<li><a href="#implementation">Implementation</a></li>
+</ul></li>
+<li><a href="#summary">Summary</a></li>
+</ul>
+</div>
+
+<div id="intro" class="section level2">
+<h2>Intro</h2>
+<p>So it turns out I rushed through the deeplearning.ai specialization in one month. While I did get a lot of satisfaction and fun during the month, when I look at the two facts that I made recently, I feel a bit ironic:</p>
+<ul>
+<li>I keep paying a gym (50 bucks per month) which I pretty much never go to and I doesn’t bother cancel;</li>
+<li>I rushed through the 5 good deep learning courses in less than a month to avoid paying $64 for one extra month.</li>
+</ul>
+<p>Perhaps it’s time for me to reflecting on my personal financial management and reweight what things I should value. You wouldn’t believe if I tell you that I have a finance major. (I can’t believe I do!)</p>
+<p>That’s enough of self criticism. I <strong>strongly</strong> recommend you to take this specialization. They’re just <strong>so good</strong>, period. You’ll <strong>regret</strong> if you don’t take it, period. You <strong>should</strong> take it, period.</p>
+<p>In the last post, I implemented logistic regression from scratch in R. In this post, let’s see how we can compose multiple logistic regressions to get a neural network.</p>
+</div>
+<div id="review" class="section level2">
+<h2>Review</h2>
+<p>Let me remind myself how I implemented logistic regression one month earlier:</p>
+<p>First, define a helper function, <code>sigmoid</code>, which is another name for inverse logit function. It is one of the activation functions in deep learning:</p>
+<pre class="r"><code>sigmoid &lt;- function(x) {
+  1 / (1 + exp(-x))
+}</code></pre>
+<p>Next implement the algorithm to optimize weights (a.k.a coefficients) in the following steps:</p>
+<ol style="list-style-type: decimal">
+<li><p>initialize weights (coefficients) to zeros;</p></li>
+<li><p>forward propagation, i.e., calculating the predictions and cost based on the current weights;</p></li>
+</ol>
+<pre class="r"><code>forward_propagation &lt;- function(X, w, activation = sigmoid) {
+  activation(X %*% w)
+}
+
+compute_cost &lt;- function(y, a, N = length(y)) {
+  -(1 / N) * (sum(y * log(a)) + sum((1 - y) * log(1 - a)))
+}</code></pre>
+<ol start="3" style="list-style-type: decimal">
+<li>backward propagation, i.e. calculating the gradients;</li>
+</ol>
+<pre class="r"><code>backward_propagation &lt;- function(X, y, a, N = length(y)) {
+  (1/N) * crossprod(X, a - y)
+}</code></pre>
+<ol start="4" style="list-style-type: decimal">
+<li>update the weights by moving them down the steepest slope. (a.k.a <strong>Gradient descent</strong>);</li>
+</ol>
+<pre class="r"><code>update_grads &lt;- function(w, dw, learn_rate) {
+  w - learn_rate * dw
+}</code></pre>
+<ol start="5" style="list-style-type: decimal">
+<li>repeat the step 2 - 4 a lot of times. I removed the code for caching intermediate results so the <em>logic</em> is more prominent.</li>
+</ol>
+<pre class="r"><code>logistic_model &lt;- function(X, y, activation = sigmoid, learn_rate, iter) {
+  
+  N &lt;- nrow(X)
+  
+  # initialize weights, cost
+  w &lt;- numeric(ncol(X))
+  J &lt;- numeric(iter)
+  
+  # optimize
+  for (i in 1:iter) {
+    
+    # forwardprop, compute cost, backprop, gradient descent 
+    a_train &lt;- forward_propagation(X, w, activation = activation) 
+    J[i] &lt;- compute_cost(y, a_train, N = N) 
+    dw &lt;- backward_propagation(X, y, a_train, N = N) 
+    w &lt;- update_grads(w, dw, learn_rate = learn_rate)
+    
+  }
+  
+  # return a object of class `simple_lr` so we can write methods
+  structure(
+    list(J = J, w = w, dw = dw),
+    class = &quot;simple_lr&quot;  
+  )
+}</code></pre>
+<p>To test that this simple logistic regression model is implemented correctly, let’s compare it to <code>glm</code>.</p>
+<pre class="r"><code># our logistic_model requires data in matrix form, let&#39;s do 100 iteration
+simple_lr_result &lt;- logistic_model(X = model.matrix(vs ~ 0 + disp + mpg + hp, mtcars), y = mtcars$vs, learn_rate = 0.00015, iter = 30000)
+plot(simple_lr_result$J, type = &quot;l&quot;, lwd = 2,
+     ylab = &quot;Cost&quot;, xlab = &quot;Iteration&quot;, main = &quot;Cost function&quot;)</code></pre>
+<p><img src="/post/2018-03-05-deep-learning-in-r-2-compose-logistic-regressions-neural-network_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<pre class="r"><code>simple_lr_result$w</code></pre>
+<pre><code>##               [,1]
+## disp  0.0004436032
+## mpg   0.2224887992
+## hp   -0.0377543115</code></pre>
+<pre class="r"><code># more elegant glm call with binomial family
+glm_result &lt;- glm(vs ~ 0 + disp + mpg + hp, mtcars, family = binomial(link = &quot;logit&quot;))
+glm_result$coefficients</code></pre>
+<pre><code>##          disp           mpg            hp 
+##  0.0004436031  0.2224887978 -0.0377543111</code></pre>
+<p>Great they agree! Clearly <code>glm</code> is more elegant and it also turns out it has a much better optimazation algorithm. It turns out that <code>logistic_regression</code> doesn’t do a good job in optimizing the cost function, particularly if we add the intercept term (a.k.a bias) in. I will come back to this problem in another post to investigate more optimization algorithms.</p>
+<p>Here’s a helper method for predicting with this simple logistic regression object.</p>
+<pre class="r"><code>predict.simple_lr &lt;- function(object, newdata, type = c(&quot;link&quot;, &quot;response&quot;, &quot;label&quot;)) {
+  
+  type = match.arg(type)
+  
+  if (type == &quot;link&quot;) return(drop(newdata %*% object$w))
+  
+  # one more step of forward propagation
+  response &lt;- drop(forward_propagation(newdata, w = object$w))
+  
+  if (type == &quot;label&quot;) ifelse(response &gt; 0.5, 1, 0) else response
+}</code></pre>
+<pre class="r"><code>predict(glm_result, newdata = mtcars, type = &quot;response&quot;) </code></pre>
+<pre><code>##           Mazda RX4       Mazda RX4 Wag          Datsun 710 
+##        0.6434264106        0.6434264106        0.8333423436 
+##      Hornet 4 Drive   Hornet Sportabout             Valiant 
+##        0.6732091392        0.0922248730        0.5405743996 
+##          Duster 360           Merc 240D            Merc 230 
+##        0.0027088480        0.9590281801        0.8247033907 
+##            Merc 280           Merc 280C          Merc 450SE 
+##        0.4261326779        0.3522572733        0.0463262007 
+##          Merc 450SL         Merc 450SLC  Cadillac Fleetwood 
+##        0.0560211706        0.0358604666        0.0053977021 
+## Lincoln Continental   Chrysler Imperial            Fiat 128 
+##        0.0036870454        0.0053904527        0.9914375032 
+##         Honda Civic      Toyota Corolla       Toyota Corona 
+##        0.9921082634        0.9940587703        0.7639786728 
+##    Dodge Challenger         AMC Javelin          Camaro Z28 
+##        0.1116988381        0.1046623356        0.0021600875 
+##    Pontiac Firebird           Fiat X1-9       Porsche 914-2 
+##        0.1036066040        0.9738448093        0.9170125587 
+##        Lotus Europa      Ford Pantera L        Ferrari Dino 
+##        0.9268723256        0.0018400690        0.1034326552 
+##       Maserati Bora          Volvo 142E 
+##        0.0001033963        0.6681248765</code></pre>
+<pre class="r"><code>predict(simple_lr_result, newdata = model.matrix(vs ~ 0 + disp + mpg + hp, mtcars), type = &quot;response&quot;)</code></pre>
+<pre><code>##           Mazda RX4       Mazda RX4 Wag          Datsun 710 
+##        0.6434264099        0.6434264099        0.8333423438 
+##      Hornet 4 Drive   Hornet Sportabout             Valiant 
+##        0.6732091408        0.0922248719        0.5405744000 
+##          Duster 360           Merc 240D            Merc 230 
+##        0.0027088478        0.9590281809        0.8247033913 
+##            Merc 280           Merc 280C          Merc 450SE 
+##        0.4261326753        0.3522572705        0.0463261995 
+##          Merc 450SL         Merc 450SLC  Cadillac Fleetwood 
+##        0.0560211692        0.0358604656        0.0053977019 
+## Lincoln Continental   Chrysler Imperial            Fiat 128 
+##        0.0036870453        0.0053904525        0.9914375033 
+##         Honda Civic      Toyota Corolla       Toyota Corona 
+##        0.9921082636        0.9940587705        0.7639786726 
+##    Dodge Challenger         AMC Javelin          Camaro Z28 
+##        0.1116988370        0.1046623343        0.0021600874 
+##    Pontiac Firebird           Fiat X1-9       Porsche 914-2 
+##        0.1036066031        0.9738448097        0.9170125593 
+##        Lotus Europa      Ford Pantera L        Ferrari Dino 
+##        0.9268723257        0.0018400689        0.1034326520 
+##       Maserati Bora          Volvo 142E 
+##        0.0001033963        0.6681248751</code></pre>
+<p>To summarise, logistic regression takes as input some data, <span class="math inline">\(X\)</span>, linearly combines them using it’s weights, <span class="math inline">\(Xw\)</span>, and applies a non-linear activation function (e.g. <code>sigmoid</code> function) to make predictions <span class="math inline">\(\hat{y}\)</span>. Or more generally, it takes some <strong>input</strong> <span class="math inline">\(X\)</span> and produces <strong>output</strong> <span class="math inline">\(\hat{y}\)</span>.</p>
+</div>
+<div id="compose-logistic-regression" class="section level2">
+<h2>Compose logistic regression</h2>
+<p>In the field of deep learning, logistic regression can be viewed as the basic <em>building block</em> of a neural network, hence it is also called a <em>logistic unit</em> or simply a <em>unit</em>. It is als called a <strong>neuron</strong>, inspired by neuron science<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a></p>
+<p>Each <strong>neuron</strong> (logistic regression) takes previous neurons’ outputs (previous logistic regression units’ <strong>predictions</strong>, or more commonly refered to as <strong>activations</strong> in deep learning) as it’s inputs, and computes it’s outputs, which will be fed into it’s downstream neurons. Note that each neuron takes many neurons’s outputs as it’s inputs, i.e., it depends on more than one neurons.</p>
+<p>Perhaps for cleaner organization, neurons are organized into <strong>hidden layers</strong> and <strong>output layers</strong>. Hidden layers are comprised of <strong>hidden units</strong> (i.e. logistic regressions) and output layers are comprised of one or more units, or neurons, that output final predictions. The input matrix, <span class="math inline">\(\mathbf{X}\)</span> is organized into an <strong>input layer</strong>, which is comprised or <span class="math inline">\(p\)</span> units, where <span class="math inline">\(p\)</span> is the number of features. For the <span class="math inline">\(i{th}\)</span> input unit, an N-vector, <span class="math inline">\(\mathbf{x}_i\)</span> represents all <span class="math inline">\(N\)</span> observations for that unit.</p>
+<p>Here I am following traditional statistics notations (adapted from <a href="https://web.stanford.edu/~hastie/Papers/ESLII.pdf">The Elements of Statisitcal Learning</a>): all vectors are column vectors denoted by non-bold lower case letters (e.g. <span class="math inline">\(w\)</span>), except when a vector has <span class="math inline">\(N\)</span> (sample size) components in which case it is denoted by <strong>bold</strong> lower case letters (<span class="math inline">\(\mathbf{a}\)</span>). Elements of a vector can be accessed via subscript (e.g. <span class="math inline">\(w_j\)</span> represent the <span class="math inline">\(j^{th}\)</span> element of <span class="math inline">\(w\)</span>). Matrices are denoted by <strong>bold</strong> capital letters (e.g. <span class="math inline">\(\mathbf{X}\)</span>) and elements can be accessed by <span class="math inline">\(\mathbf{X}_{ij}\)</span>. Non bold capital letters are used to denote the generic aspect of a random variable, i.e., a feature.</p>
+<p>This notation, however, doesn’t differentiate <span class="math inline">\(\mathbf{x}_i\)</span>, which represents an N-vector of all observations for <span class="math inline">\(i^{th}\)</span> feature from <span class="math inline">\(\mathbf{x}_i\)</span>, which represents the <span class="math inline">\(i^{th}\)</span> entry of an N-vector <span class="math inline">\(\mathbf{x}\)</span>. This isn’t super important now because most of the time we don’t refer to individual entries in a vector. I will however make it clear when individual entries need to be refered to.</p>
+<p>The graph below shows a simple such neural network, with an input layer comprising of <span class="math inline">\(p\)</span> features, a hidden layer with 4 hidden units ,i.e., 4 logistic regressions, and an output layer with one unit ,i.e., 1 logistic regression. Note that this graph shows <strong>conceptually</strong> the structure (or architecture) of a neural network, because I am using the uppercase captical letters to stress the generic aspects of the variables, or features.</p>
+<p><img src="/post/2018-03-05-deep-learning-in-r-2-compose-logistic-regressions-neural-network_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
+<p>In the graph above, superscript in square bracket represents the <strong>layer number</strong> whereas subscript identifies logistic units. So <span class="math inline">\(A_2^{[1]}\)</span> means the second logistic regression unit, or the second hidden unit in layer 1. Note that <span class="math inline">\(X_i\)</span> denotes the <span class="math inline">\(i^{th}\)</span> variable, or feature.</p>
+<p>Empirically, once we get labelled training data (size <span class="math inline">\(N\)</span>), we can substitute the non bold uppercase capital letters, denoting generic aspects of variables, by <strong>bold</strong> lower case letters that represent <span class="math inline">\(N\)</span> <strong>realizations</strong> of those variables. That is, each <strong>bold</strong> lower case letter denotes an N-vector that represents all observations for the corresponding variable in the conceptual graph above:</p>
+<p><img src="/post/2018-03-05-deep-learning-in-r-2-compose-logistic-regressions-neural-network_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
+<p>Note that <span class="math inline">\(\mathbf{x}_i\)</span> and <span class="math inline">\(\mathbf{a}_i^{[j]}\)</span> are all N-vectors, where <span class="math inline">\(\mathbf{x}_i\)</span> represents observations and <span class="math inline">\(\mathbf{a}_i^{[j]}\)</span> represents intermediate values the neural network computes in order to do final predictions. It feels natuaral or cognitively easier if we generalize the notation for hidden layers and output layers to input layers as well:</p>
+<p><img src="/post/2018-03-05-deep-learning-in-r-2-compose-logistic-regressions-neural-network_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
+<p>where <span class="math inline">\(\mathbf{a}_i^{[0]} = \mathbf{x}_i \forall i \in \{1, 2, .., p\}\)</span>.</p>
+<p>Note that the input layer, by convention, is layer 0, and doesn’t count towards total number of layers. So the network above is said to have two fully connected layers, where <strong>a fully connected layer</strong> means that each neuron in that layer takes outputs from all neurons in the previous layer as its inputs.</p>
+<p>The design matrix can also be denoted using <span class="math inline">\(\mathbf{A}^{[0]}\)</span> and can be written as:</p>
+<p><span class="math display">\[
+\begin{align}
+\mathbf{X}
+&amp; = \mathbf{A^{[0]}} \\
+&amp; = \begin{bmatrix} \mathbf{1} \ \mathbf{x}_1 \ \mathbf{x}_2 \ ...\ \mathbf{x}_p \end{bmatrix} \\
+&amp; = \begin{bmatrix} \mathbf{1} \ \mathbf{a}_1^{[0]} \ \mathbf{a}_2^{[0]} \ ...\ \mathbf{a}_p^{[0]} \end{bmatrix} \\
+\end{align}
+\]</span></p>
+<div id="forward-propagation" class="section level3">
+<h3>Forward Propagation</h3>
+<p>The forward propagation for a single logistic regression is quite simple:</p>
+<p><span class="math display">\[
+\mathbf{a} = \sigma(\mathbf{X}w)
+\]</span> Where <span class="math inline">\(\mathbf{X}\)</span> is the <span class="math inline">\(N\)</span> by <span class="math inline">\(p\)</span> design matrix, <span class="math inline">\(w\)</span> is the (p + 1)-vector representing coefficients, or biases and weights. So for the <span class="math inline">\(i^{th}\)</span> neuron in layer <span class="math inline">\(1\)</span> (the middle layer), we can write:</p>
+<p><span class="math display">\[
+\mathbf{a}_i^{[1]} = \sigma(\mathbf{X}w_i^{[1]}) = \sigma(\mathbf{A}^{[0]}w_i^{[1]}) 
+\]</span></p>
+<p>More generally, for the <span class="math inline">\(i^{th}\)</span> neuron in layer l:</p>
+<p><span class="math display">\[
+\mathbf{a}_i^{[l]} = \sigma(\mathbf{z}_i^{[l-1]}) = \sigma(\mathbf{A}^{[l - 1]} w_i^{[l]}) 
+\]</span></p>
+<p>Again, we need to write down equations in more compact form the take advantage of vectorization, so if we stack all <span class="math inline">\(A_i^{[l]}\)</span> in layer l, (i.e. stack all activations from each logistic unit) horizontally and prepend a vector of 1 to take care of biases, we have:</p>
+<p><span class="math display">\[
+\begin{align}
+\mathbf{A}^{[l]} 
+&amp; = \begin{bmatrix} \mathbf{1} \ \mathbf{a}_1^{[l]} \ \mathbf{a}_1^{[l]} \ ... \ \mathbf{a}_p^{[l]}  \end{bmatrix}  \\
+&amp; = \begin{bmatrix} \mathbf{1} \ \sigma(\mathbf{z}_1^{[l - 1]}) \ \sigma(\mathbf{z}_2^{[l - 1]}) \ ... \ \sigma(\mathbf{z}_p^{[l - 1]}) \end{bmatrix} \\
+&amp; = \begin{bmatrix} \mathbf{1} \ \sigma(\mathbf{A}^{[l - 1]} w_1^{[l]}) \ \sigma(\mathbf{A}^{[l - 1]} w_2^{[l]}) \ ... \ \sigma(\mathbf{A}^{[l - 1]} w_p^{[l]}) \end{bmatrix} \\
+&amp; = \begin{bmatrix} \mathbf{1} \ \sigma(\mathbf{Z}^{[l - 1]}) \end{bmatrix} \\
+&amp; = \begin{bmatrix} \mathbf{1} \ \sigma(\mathbf{A}^{[l - 1]}W^{[l]}) \end{bmatrix} \\
+\end{align}
+\]</span></p>
+<p>The above equation is a recursive one, which means we can get <span class="math inline">\(A^{[l]}\)</span> if we know <span class="math inline">\(A^{[0]}\)</span> (which we know is simple <span class="math inline">\(X\)</span>) and all the weights. So I won’t bother writing down the exact equation of <span class="math inline">\(A^{[l]}\)</span> in terms of <span class="math inline">\(X\)</span> and <span class="math inline">\(W^{[l]}\)</span>. The cost function, perhaps not surprisingly, only depends on the final prediction, i.e., the activations of the final layer (which comprises only one unit):</p>
+<p><span class="math display">\[
+J(W^{[1]}, W^{[1]}, ..., W^{[L]})  = - \frac{1}{N} \left( \mathbf{y}^T log(A^{[L]}) + (\mathbf{1} - \mathbf{y})^T log(\mathbf{1} - A^{[L]}) \right)
+\]</span></p>
+<p>Where <span class="math inline">\(L\)</span> is the number of layers (2 in this example). Note that <span class="math inline">\(A^{[L]}\)</span> reduces to an <span class="math inline">\(N\)</span> by <span class="math inline">\(1\)</span> matrix, or equivalently an N-vector.</p>
+</div>
+<div id="backward-propagation" class="section level3">
+<h3>Backward Propagation</h3>
+<p>Here comes the (perhaps) hard part. In order for the algorithm to learn, for each iteration of forward and backward pass, we need to adjust every weight for every layer, that is, we need to compute derivatives of cost with respect to each weight so we can do gradient desecent. Again, let’s solve this recursively: compute the derivative of cost, J, with respect to the activations and weights in the final layer, <span class="math inline">\(A^{[L]}\)</span>, and then back propagate to previous layers, hence previous weights.</p>
+<p>Similar to the last post, let’s divide and conquer. The cost <span class="math inline">\(J\)</span> can be break down into the average of loss functions:</p>
+<p><span class="math display">\[
+\begin{align}
+J 
+&amp; = - \frac{1}{N} \left( \mathbf{y}^T log(A^{[L]}) + (\mathbf{1} - \mathbf{y})^T log(\mathbf{1} - A^{[L]}) \right) \\
+&amp; = \frac{1}{N} \left(- \mathbf{y}^T log(A^{[L]}) + (\mathbf{1} - \mathbf{y})^T log(\mathbf{1} - A^{[L]}) \right) \\
+&amp; = \frac{1}{N} \sum_i^N \left( - \mathbf{y_i} log(A_i^{[L]}) + (\mathbf{1} - \mathbf{y_i}) log(\mathbf{1} - A_i^{[L]}) \right) \\
+&amp; = \frac{1}{N} \sum_i^N C_i
+\end{align}
+\]</span></p>
+<p>where <span class="math inline">\(C_i = - \mathbf{y_i} log(A_i^{[L]}) + (\mathbf{1} - \mathbf{y_i}) log(\mathbf{1} - A_i^{[L]})\)</span></p>
+<p>Note that <span class="math inline">\(\frac{dC_i}{dA_i} = \left( -\frac{\mathbf{y_i}}{\mathbf{a_i}} + \frac{1 - \mathbf{y_i}}{1 - \mathbf{a_i}} \right)\)</span></p>
+<p>For the <span class="math inline">\(i^{[th]}\)</span> weight in the final layer L:</p>
+<p><span class="math display">\[
+\begin{align}
+\frac{dJ}{dA^{[L]}} = 
+&amp; = \begin{bmatrix} \frac{dJ}{\mathbf{1}} \ \frac{dJ}{A_1^{[l]}} \ \frac{dJ}{ A_2^{[l]}} \ ... \ \frac{dJ}{A_p^{[l]}}  \end{bmatrix}  \\
+&amp; = \begin{bmatrix} \mathbf{0} \ \frac{dC_1}{A_1^{[l]}} \ \frac{dC}{ A_2^{[l]}} \ ... \ \frac{dC}{A_p^{[l]}}  \end{bmatrix}  \\
+\end{align}
+\]</span></p>
+<p>$$</p>
+<p>$$</p>
+</div>
+<div id="iterate" class="section level3">
+<h3>Iterate</h3>
+</div>
+<div id="implementation" class="section level3">
+<h3>Implementation</h3>
+</div>
+</div>
+<div id="summary" class="section level2">
+<h2>Summary</h2>
+<p><code>Composing logistic regression == neural network</code> probably evaluates to <code>TRUE</code> in R. More importantly, something big behind seems to resonate with me strongly: start from small, well designed buiding block, by composing them together, you get a complex and <strong>capable</strong> system:</p>
+<blockquote>
+<p>Make each program do one thing well. — Unix philosophy #1</p>
+</blockquote>
+<p>By composing small programs together, you get unix operating systems.</p>
+</div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>To know more about the analogy between human brain and an artifical neural network model, check out this coursera <a href="https://www.coursera.org/learn/neural-networks/lecture/V1GXW/what-are-neural-networks-8-min">video</a> by <a href="https://en.wikipedia.org/wiki/Geoffrey_Hinton">Geoffrey Hinton</a>, one of the most influencial poineers of the neural networks.<a href="#fnref1">↩</a></p></li>
+</ol>
+</div>

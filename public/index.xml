@@ -6,13 +6,42 @@
     <description>Recent content on R | Data science | Visualisation</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sat, 10 Feb 2018 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Wed, 26 Sep 2018 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
-      <title>Learn Deep Learning 1: logistic regression with a neural netwrok mindset from scratch in R</title>
+      <title>Encode boolean values and operations with pure functions</title>
+      <link>/2018/09/26/encode-boolean-and-logical-operations-with-pure-functions/</link>
+      <pubDate>Wed, 26 Sep 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/2018/09/26/encode-boolean-and-logical-operations-with-pure-functions/</guid>
+      <description>Computerphile has a really good video that covers the fundamental ideas of lambda calculus, which is the basis of most functional programming languages. One of the example it went throught is encoding boolean values (true/false) using pure functions. This really bended my mind so I thought I’ll do a post.
+The fundamental idea of a boolean value is making a choice. So, the encoding of boolean values encode that idea! The true value can be encoded as a function that takes two inputs, x and y, and return the first input, x, that is, it chooses the first input.</description>
+    </item>
+    
+    <item>
+      <title>Datasets in R</title>
+      <link>/2018/06/09/datasets-in-r/</link>
+      <pubDate>Sat, 09 Jun 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/2018/06/09/datasets-in-r/</guid>
+      <description>Quite often, I find myself creating dataframes to test if my functions work on different types of columns, or if their results are reasonable. Creating these “test cases” isn’t the most fun thing to do, it’s take up a lot of time and because I often just throw them away once I’m done, I have to recreate them next time. So, can I leverage a package to do this for us?</description>
+    </item>
+    
+    <item>
+      <title>Deep Learning in R 2: compose logistic regressions == neural network</title>
+      <link>/2018/03/05/deep-learning-in-r-2-compose-logistic-regressions-neural-network/</link>
+      <pubDate>Mon, 05 Mar 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/2018/03/05/deep-learning-in-r-2-compose-logistic-regressions-neural-network/</guid>
+      <description>IntroReviewCompose logistic regressionForward PropagationBackward PropagationIterateImplementationSummaryIntroSo it turns out I rushed through the deeplearning.ai specialization in one month. While I did get a lot of satisfaction and fun during the month, when I look at the two facts that I made recently, I feel a bit ironic:
+I keep paying a gym (50 bucks per month) which I pretty much never go to and I doesn’t bother cancel;I rushed through the 5 good deep learning courses in less than a month to avoid paying $64 for one extra month.</description>
+    </item>
+    
+    <item>
+      <title>Deep Learning in R 1: logistic regression with a neural netwrok mindset from scratch in R</title>
       <link>/2018/02/10/deep-learning-neural-network-from-scratch-in-r/</link>
       <pubDate>Sat, 10 Feb 2018 00:00:00 +0000</pubDate>
       

@@ -1,0 +1,108 @@
+---
+title: Datasets in R
+author: ''
+date: '2018-06-09'
+slug: datasets-in-r
+categories:
+  - R
+tags:
+  - R
+  - Functional Programming
+draft: true
+---
+
+
+```{r include=FALSE}
+library(purrr)
+library(magrittr)
+library(dplyr)
+library(ggplot2)
+```
+
+Quite often, I find myself creating dataframes to test if my functions work on different types of columns, or if their results are reasonable. Creating these "test cases" isn't the most fun thing to do, it's take up a lot of time and because I often just throw them away once I'm done, I have to recreate them next time. So, can I leverage a package to do this for us? Well the answer is yes, because in R, if there's anything you want to do, there's a package for it. And this time, I don't even need to install the package myself - it comes with base R! 
+
+
+The 4th package in the search list, `datasets` is the one I am looking for. 
+
+```{r}
+search()
+```
+
+
+```{r}
+datasets_df <-
+  ls("package:datasets") %>%
+  purrr::set_names(.) %>% 
+  map(get) %>% 
+  keep( ~ "data.frame" %in% class(.)) %>% 
+  map2(
+    names(.),
+    ~{
+      data_frame(
+        table = .y,
+        nrows = nrow(.x),
+        class = map_chr(.x, function(x)
+          paste(class(x), collapse = ", ")),
+        type = map_chr(.x, typeof),
+        variable = names(.x)
+      ) %>%
+      arrange(class)
+    }
+  ) %>% 
+  reduce(rbind)
+datasets_df
+```
+
+
+So we have in total `r length(unique(datasets_df$table))` dataframes in `datasets` package and `r nrow(datasets_df)` columns in those tables. However, if we look at the types of columns, it seems that there's no character or Date columns!
+
+```{r}
+datasets_df %>% count(class)
+```
+
+
+so lets search all dataframes in the all the packages on my search list (except global environment):
+
+
+```{r}
+# library(stringr)
+# # all_df <-
+#   search() %>% 
+#   stringr::str_subset("package") %>% 
+#   purrr::set_names(.) %>%
+#   map(
+#     ~ data.frame(
+#         pacakge = stringr::str_extract(., "(?<=:).*"),
+#         df = ls(.) %>% keep( ~ "data.frame" %in% class(get(.)))
+#       )
+#   ) %>% 
+#   reduce(rbind)
+# 
+# all_cols <- 
+#   search() %>% 
+#   stringr::str_subset("package") %>%  
+#   map(ls) %>% 
+#   flatten %>% 
+#   purrr::set_names(.) %>% 
+#   map(get) %>% 
+#   keep( ~ "data.frame" %in% class(.)) %>% 
+#   map2(
+#     names(.),
+#     ~{
+#       data_frame(
+#         df = .y,
+#         nrows = nrow(.x),
+#         class = map_chr(.x, function(x)
+#           paste(class(x), collapse = ", ")),
+#         type = map_chr(.x, typeof),
+#         variable = names(.x)
+#       ) %>%
+#       arrange(class)
+#     }
+#   ) %>% 
+#   reduce(rbind)
+# 
+# all_df %>% 
+#   left_join(all_cols, by = "df")
+```
+

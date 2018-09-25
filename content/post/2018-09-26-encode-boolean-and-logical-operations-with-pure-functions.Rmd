@@ -1,0 +1,83 @@
+---
+title: Encode boolean values and operations with pure functions
+author: ''
+date: '2018-09-26'
+slug: encode-boolean-and-logical-operations-with-pure-functions
+categories:
+  - functional programming
+tags:
+  - Functional Programming
+---
+
+Computerphile has a really good [video](https://www.youtube.com/watch?v=eis11j_iGMs) that covers the fundamental ideas of lambda calculus, which is the basis of most functional programming languages. One of the example it went throught is encoding boolean values (true/false) using pure functions. This really bended my mind so I thought I'll do a post.
+
+The fundamental idea of a boolean value is making a choice. So, the encoding of boolean values encode that idea! The _true_ value can be encoded as a function that takes two inputs, x and y, and return the first input, x, that is, it chooses the first input. Likewise, the _false_ value takes two inputs and chooses the second input:
+
+```{r}
+true <- structure(function(x, y) x, class = c("true", "bool"))
+false <- structure(function(x, y) y, class = c("false", "bool"))
+
+# add a print method so they display nicer
+print.bool = function(x) cat(class(x)[1], "\n")
+```
+
+That's it. 
+
+```{r}
+true
+false
+```
+
+Next let's define logical operations on them. The most obivious one is perhaps negation. This is perhaps a little mind bending for the first time, but here it goes:
+
+```{r}
+# `!` is a generic function in r, so we can add methods to it
+`!.bool` <- function(x) x(false, true)
+```
+
+Remeber that the boolean values are functions and the _true_ value chooses it's first input. In the above definition of negation, we simply set the first input to _false_, so _true_ chooses _false_, and we set the second input to _true_ so _false_ chooses _true_ - and that's negation!:
+
+```{r}
+!true
+!false
+```
+
+
+The video left a little puzzle to solve: how to define other logical operations in this style, such as _AND_, _OR_ and _XOR_? So I had a go and totally bended my mind (and the definition is so simple!):
+
+_AND_ is basically a function that uses it's first input to choose between the second input and _false_ 
+```{r}
+# `&` is generic 
+`&.bool` <- function(x, y) x(y, false)
+
+true & true
+false & true
+true & false
+false & false
+```
+
+_OR_ is a function that uses it's first input to choose between _true_ and the second input:
+
+```{r}
+# `|` is generic 
+`|.bool` <- function(x, y) x(true, y)
+
+true | true
+false | true
+true | false
+false | false
+```
+
+_XOR_ is a function that uses it's first input to choos between the negation of the second input and _false_: 
+
+```{r}
+# `xor` is generic 
+xor.bool <- function(x, y) x(!y, false)
+
+xor(true, false)
+xor(false, true)
+xor(false, false)
+xor(true, true)
+```
+
+Pretty sure there're other definitions, but I'm just totally mind blowed by this style of thinking. Perhaps next question is, how to define integer and integer operations in this functional style? And how about floating numbers, characters etc? Recently I learnt a few functional programming languages and techniques and it really bends my mind and broadens my view a lot. I'm hoping to learn more and share more!

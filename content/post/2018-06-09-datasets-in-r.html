@@ -1,0 +1,109 @@
+---
+title: Datasets in R
+author: ''
+date: '2018-06-09'
+slug: datasets-in-r
+categories:
+  - R
+tags:
+  - R
+  - Functional Programming
+draft: true
+---
+
+
+
+<p>Quite often, I find myself creating dataframes to test if my functions work on different types of columns, or if their results are reasonable. Creating these “test cases” isn’t the most fun thing to do, it’s take up a lot of time and because I often just throw them away once I’m done, I have to recreate them next time. So, can I leverage a package to do this for us? Well the answer is yes, because in R, if there’s anything you want to do, there’s a package for it. And this time, I don’t even need to install the package myself - it comes with base R!</p>
+<p>The 4th package in the search list, <code>datasets</code> is the one I am looking for.</p>
+<pre class="r"><code>search()</code></pre>
+<pre><code>##  [1] &quot;.GlobalEnv&quot;        &quot;package:ggplot2&quot;   &quot;package:dplyr&quot;    
+##  [4] &quot;package:magrittr&quot;  &quot;package:purrr&quot;     &quot;package:methods&quot;  
+##  [7] &quot;package:stats&quot;     &quot;package:graphics&quot;  &quot;package:grDevices&quot;
+## [10] &quot;package:utils&quot;     &quot;package:datasets&quot;  &quot;Autoloads&quot;        
+## [13] &quot;package:base&quot;</code></pre>
+<pre class="r"><code>datasets_df &lt;-
+  ls(&quot;package:datasets&quot;) %&gt;%
+  purrr::set_names(.) %&gt;% 
+  map(get) %&gt;% 
+  keep( ~ &quot;data.frame&quot; %in% class(.)) %&gt;% 
+  map2(
+    names(.),
+    ~{
+      data_frame(
+        table = .y,
+        nrows = nrow(.x),
+        class = map_chr(.x, function(x)
+          paste(class(x), collapse = &quot;, &quot;)),
+        type = map_chr(.x, typeof),
+        variable = names(.x)
+      ) %&gt;%
+      arrange(class)
+    }
+  ) %&gt;% 
+  reduce(rbind)</code></pre>
+<pre><code>## Warning: package &#39;bindrcpp&#39; was built under R version 3.4.4</code></pre>
+<pre class="r"><code>datasets_df</code></pre>
+<pre><code>## # A tibble: 189 x 5
+##    table      nrows class   type    variable
+##    &lt;chr&gt;      &lt;int&gt; &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;   
+##  1 airquality   153 integer integer Ozone   
+##  2 airquality   153 integer integer Solar.R 
+##  3 airquality   153 integer integer Temp    
+##  4 airquality   153 integer integer Month   
+##  5 airquality   153 integer integer Day     
+##  6 airquality   153 numeric double  Wind    
+##  7 anscombe      11 numeric double  x1      
+##  8 anscombe      11 numeric double  x2      
+##  9 anscombe      11 numeric double  x3      
+## 10 anscombe      11 numeric double  x4      
+## # ... with 179 more rows</code></pre>
+<p>So we have in total 44 dataframes in <code>datasets</code> package and 189 columns in those tables. However, if we look at the types of columns, it seems that there’s no character or Date columns!</p>
+<pre class="r"><code>datasets_df %&gt;% count(class)</code></pre>
+<pre><code>## # A tibble: 5 x 2
+##   class               n
+##   &lt;chr&gt;           &lt;int&gt;
+## 1 factor             20
+## 2 integer            17
+## 3 numeric           141
+## 4 ordered, factor    10
+## 5 ts                  1</code></pre>
+<p>so lets search all dataframes in the all the packages on my search list (except global environment):</p>
+<pre class="r"><code># library(stringr)
+# # all_df &lt;-
+#   search() %&gt;% 
+#   stringr::str_subset(&quot;package&quot;) %&gt;% 
+#   purrr::set_names(.) %&gt;%
+#   map(
+#     ~ data.frame(
+#         pacakge = stringr::str_extract(., &quot;(?&lt;=:).*&quot;),
+#         df = ls(.) %&gt;% keep( ~ &quot;data.frame&quot; %in% class(get(.)))
+#       )
+#   ) %&gt;% 
+#   reduce(rbind)
+# 
+# all_cols &lt;- 
+#   search() %&gt;% 
+#   stringr::str_subset(&quot;package&quot;) %&gt;%  
+#   map(ls) %&gt;% 
+#   flatten %&gt;% 
+#   purrr::set_names(.) %&gt;% 
+#   map(get) %&gt;% 
+#   keep( ~ &quot;data.frame&quot; %in% class(.)) %&gt;% 
+#   map2(
+#     names(.),
+#     ~{
+#       data_frame(
+#         df = .y,
+#         nrows = nrow(.x),
+#         class = map_chr(.x, function(x)
+#           paste(class(x), collapse = &quot;, &quot;)),
+#         type = map_chr(.x, typeof),
+#         variable = names(.x)
+#       ) %&gt;%
+#       arrange(class)
+#     }
+#   ) %&gt;% 
+#   reduce(rbind)
+# 
+# all_df %&gt;% 
+#   left_join(all_cols, by = &quot;df&quot;)</code></pre>

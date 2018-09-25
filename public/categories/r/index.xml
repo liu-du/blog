@@ -6,10 +6,19 @@
     <description>Recent content in R on R | Data science | Visualisation</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sun, 28 Jan 2018 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Sat, 09 Jun 2018 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/categories/r/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Datasets in R</title>
+      <link>/2018/06/09/datasets-in-r/</link>
+      <pubDate>Sat, 09 Jun 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/2018/06/09/datasets-in-r/</guid>
+      <description>Quite often, I find myself creating dataframes to test if my functions work on different types of columns, or if their results are reasonable. Creating these “test cases” isn’t the most fun thing to do, it’s take up a lot of time and because I often just throw them away once I’m done, I have to recreate them next time. So, can I leverage a package to do this for us?</description>
+    </item>
     
     <item>
       <title>R: on.exit() and sys.on.exit()</title>
