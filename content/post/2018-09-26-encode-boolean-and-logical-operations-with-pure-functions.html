@@ -17,55 +17,55 @@ tags:
 false &lt;- structure(function(x, y) y, class = c(&quot;false&quot;, &quot;bool&quot;))
 
 # add a print method so they display nicer
-print.bool = function(x) cat(class(x)[1], &quot;\n&quot;)</code></pre>
+print.bool &lt;- function(x) cat(class(x)[1], &quot;\n&quot;)</code></pre>
 <p>That’s it.</p>
-<pre class="r"><code>true</code></pre>
-<pre><code>## true</code></pre>
-<pre class="r"><code>false</code></pre>
-<pre><code>## false</code></pre>
+<pre class="r"><code>true
+## true
+false
+## false</code></pre>
 <p>Next let’s define logical operations on them. The most obivious one is perhaps negation. This is perhaps a little mind bending for the first time, but here it goes:</p>
 <pre class="r"><code># `!` is a generic function in r, so we can add methods to it
 `!.bool` &lt;- function(x) x(false, true)</code></pre>
 <p>Remeber that the boolean values are functions and the <em>true</em> value chooses it’s first input. In the above definition of negation, we simply set the first input to <em>false</em>, so <em>true</em> chooses <em>false</em>, and we set the second input to <em>true</em> so <em>false</em> chooses <em>true</em> - and that’s negation!:</p>
-<pre class="r"><code>!true</code></pre>
-<pre><code>## false</code></pre>
-<pre class="r"><code>!false</code></pre>
-<pre><code>## true</code></pre>
+<pre class="r"><code>!true
+## false
+!false
+## true</code></pre>
 <p>The video left a little puzzle to solve: how to define other logical operations in this style, such as <em>AND</em>, <em>OR</em> and <em>XOR</em>? So I had a go and totally bended my mind (and the definition is so simple!):</p>
 <p><em>AND</em> is basically a function that uses it’s first input to choose between the second input and <em>false</em></p>
 <pre class="r"><code># `&amp;` is generic 
 `&amp;.bool` &lt;- function(x, y) x(y, false)
 
-true &amp; true</code></pre>
-<pre><code>## true</code></pre>
-<pre class="r"><code>false &amp; true</code></pre>
-<pre><code>## false</code></pre>
-<pre class="r"><code>true &amp; false</code></pre>
-<pre><code>## false</code></pre>
-<pre class="r"><code>false &amp; false</code></pre>
-<pre><code>## false</code></pre>
+true &amp; true
+## true
+false &amp; true
+## false
+true &amp; false
+## false
+false &amp; false
+## false</code></pre>
 <p><em>OR</em> is a function that uses it’s first input to choose between <em>true</em> and the second input:</p>
 <pre class="r"><code># `|` is generic 
 `|.bool` &lt;- function(x, y) x(true, y)
 
-true | true</code></pre>
-<pre><code>## true</code></pre>
-<pre class="r"><code>false | true</code></pre>
-<pre><code>## true</code></pre>
-<pre class="r"><code>true | false</code></pre>
-<pre><code>## true</code></pre>
-<pre class="r"><code>false | false</code></pre>
-<pre><code>## false</code></pre>
+true | true
+## true
+false | true
+## true
+true | false
+## true
+false | false
+## false</code></pre>
 <p><em>XOR</em> is a function that uses it’s first input to choos between the negation of the second input and <em>false</em>:</p>
 <pre class="r"><code># `xor` is generic 
 xor.bool &lt;- function(x, y) x(!y, false)
 
-xor(true, false)</code></pre>
-<pre><code>## true</code></pre>
-<pre class="r"><code>xor(false, true)</code></pre>
-<pre><code>## true</code></pre>
-<pre class="r"><code>xor(false, false)</code></pre>
-<pre><code>## false</code></pre>
-<pre class="r"><code>xor(true, true)</code></pre>
-<pre><code>## false</code></pre>
+xor(true, false)
+## true
+xor(false, true)
+## true
+xor(false, false)
+## false
+xor(true, true)
+## false</code></pre>
 <p>Pretty sure there’re other definitions, but I’m just totally mind blowed by this style of thinking. Perhaps next question is, how to define integer and integer operations in this functional style? And how about floating numbers, characters etc? Recently I learnt a few functional programming languages and techniques and it really bends my mind and broadens my view a lot. I’m hoping to learn more and share more!</p>
