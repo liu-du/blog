@@ -11,7 +11,7 @@ tags:
 
 
 
-<p>Computerphile has a really good <a href="https://www.youtube.com/watch?v=eis11j_iGMs">video</a> that covers the fundamental ideas of lambda calculus, which is the basis of most functional programming languages. One of the example it went throught is encoding boolean values (true/false) using pure functions. This really bended my mind so I thought I’ll do a post.</p>
+<p>Computerphile has a really good <a href="https://www.youtube.com/watch?v=eis11j_iGMs">video</a> that covers the fundamental ideas of lambda calculus, which is the basis of most functional programming languages. One of the example it went throught is encoding boolean values (true/false) using pure functions - it really bended my mind.</p>
 <p>The fundamental idea of a boolean value is making a choice. So, the encoding of boolean values encode that idea! The <em>true</em> value can be encoded as a function that takes two inputs, x and y, and return the first input, x, that is, it chooses the first input. Likewise, the <em>false</em> value takes two inputs and chooses the second input:</p>
 <pre class="r"><code>true &lt;- structure(function(x, y) x, class = c(&quot;true&quot;, &quot;bool&quot;))
 false &lt;- structure(function(x, y) y, class = c(&quot;false&quot;, &quot;bool&quot;))
@@ -23,7 +23,7 @@ print.bool &lt;- function(x) cat(class(x)[1], &quot;\n&quot;)</code></pre>
 ## true
 false
 ## false</code></pre>
-<p>Next let’s define logical operations on them. The most obivious one is perhaps negation. This is perhaps a little mind bending for the first time, but here it goes:</p>
+<p>Next let’s define logical operations on them. The first one that comes to one’s mind is perhaps negation. This is perhaps a little mind bending for the first time, but here it goes:</p>
 <pre class="r"><code># `!` is a generic function in r, so we can add methods to it
 `!.bool` &lt;- function(x) x(false, true)</code></pre>
 <p>Remeber that the boolean values are functions and the <em>true</em> value chooses it’s first input. In the above definition of negation, we simply set the first input to <em>false</em>, so <em>true</em> chooses <em>false</em>, and we set the second input to <em>true</em> so <em>false</em> chooses <em>true</em> - and that’s negation!:</p>

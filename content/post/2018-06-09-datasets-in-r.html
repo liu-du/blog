@@ -25,7 +25,7 @@ draft: true
   ls(&quot;package:datasets&quot;) %&gt;%
   purrr::set_names(.) %&gt;% 
   map(get) %&gt;% 
-  keep( ~ &quot;data.frame&quot; %in% class(.)) %&gt;% 
+  keep( ~ inherits(., &quot;data.frame&quot;)) %&gt;% 
   map2(
     names(.),
     ~{

@@ -6,10 +6,19 @@
     <description>Recent content on R | Data science | Visualisation</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 25 Sep 2018 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Wed, 26 Sep 2018 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>R: from on.exit() to quasiquotation</title>
+      <link>/2018/09/26/r-on-exit-and-sys-on-exit/</link>
+      <pubDate>Wed, 26 Sep 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/2018/09/26/r-on-exit-and-sys-on-exit/</guid>
+      <description>Part 1Often one needs to write functions that not only perform computation on its own, but also interact with the world outside of the function execution environment, for example, writing to a file, saving plots or changing working directory. Computer scientists called these operations side effects, in the sense that these functions change some aspects of the global state of the software. To be more precise, writing to a file requires a file connection to be established, saving plots requires opening a graphical device and changing working directories affects how to find things in the computer file system.</description>
+    </item>
     
     <item>
       <title>Encode boolean values and operations with pure functions</title>
@@ -17,7 +26,7 @@
       <pubDate>Tue, 25 Sep 2018 00:00:00 +0000</pubDate>
       
       <guid>/2018/09/25/encode-boolean-and-logical-operations-with-pure-functions/</guid>
-      <description>Computerphile has a really good video that covers the fundamental ideas of lambda calculus, which is the basis of most functional programming languages. One of the example it went throught is encoding boolean values (true/false) using pure functions. This really bended my mind so I thought I’ll do a post.
+      <description>Computerphile has a really good video that covers the fundamental ideas of lambda calculus, which is the basis of most functional programming languages. One of the example it went throught is encoding boolean values (true/false) using pure functions - it really bended my mind.
 The fundamental idea of a boolean value is making a choice. So, the encoding of boolean values encode that idea! The true value can be encoded as a function that takes two inputs, x and y, and return the first input, x, that is, it chooses the first input.</description>
     </item>
     
@@ -48,15 +57,6 @@ The fundamental idea of a boolean value is making a choice. So, the encoding of 
       <guid>/2018/02/10/deep-learning-neural-network-from-scratch-in-r/</guid>
       <description>IntroData PreparationLogistic RegressionForward PropagationBackward PropagationImplementationTrain ModelUnderstand the ResultSummaryIntroWith online courses, I feel I am usually too rushed to complete them for at least two reasons:
 Save money because I pay a monthly fee.Eager to get a certificate so I can overestimate myself.So this time I think perhaps I should pause and let it precipitate.</description>
-    </item>
-    
-    <item>
-      <title>R: on.exit() and sys.on.exit()</title>
-      <link>/2018/01/28/r-on-exit-and-sys-on-exit/</link>
-      <pubDate>Sun, 28 Jan 2018 00:00:00 +0000</pubDate>
-      
-      <guid>/2018/01/28/r-on-exit-and-sys-on-exit/</guid>
-      <description>IntroOften one needs to write functions not just to perform computation, but also interact with the world outside of the function execution environment, for example, writing to a file, saving plots or changing working directory. Computer scientists called these operations side effects, in that these functions not only perform computation, but also change some aspects of the global state of the software. To be more precise, writing to a file requires a file connection to be established, saving plots requires opening a graphical device and changing working directories affects how to find things.</description>
     </item>
     
     <item>

@@ -34,7 +34,7 @@ datasets_df <-
   ls("package:datasets") %>%
   purrr::set_names(.) %>% 
   map(get) %>% 
-  keep( ~ "data.frame" %in% class(.)) %>% 
+  keep( ~ inherits(., "data.frame")) %>% 
   map2(
     names(.),
     ~{

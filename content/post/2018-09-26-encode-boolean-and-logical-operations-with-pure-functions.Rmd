@@ -9,7 +9,7 @@ tags:
   - Functional Programming
 ---
 
-Computerphile has a really good [video](https://www.youtube.com/watch?v=eis11j_iGMs) that covers the fundamental ideas of lambda calculus, which is the basis of most functional programming languages. One of the example it went throught is encoding boolean values (true/false) using pure functions. This really bended my mind so I thought I'll do a post.
+Computerphile has a really good [video](https://www.youtube.com/watch?v=eis11j_iGMs) that covers the fundamental ideas of lambda calculus, which is the basis of most functional programming languages. One of the example it went throught is encoding boolean values (true/false) using pure functions - it really bended my mind.
 
 The fundamental idea of a boolean value is making a choice. So, the encoding of boolean values encode that idea! The _true_ value can be encoded as a function that takes two inputs, x and y, and return the first input, x, that is, it chooses the first input. Likewise, the _false_ value takes two inputs and chooses the second input:
 
@@ -28,7 +28,7 @@ true
 false
 ```
 
-Next let's define logical operations on them. The most obivious one is perhaps negation. This is perhaps a little mind bending for the first time, but here it goes:
+Next let's define logical operations on them. The first one that comes to one's mind is perhaps negation. This is perhaps a little mind bending for the first time, but here it goes:
 
 ```{r}
 # `!` is a generic function in r, so we can add methods to it
