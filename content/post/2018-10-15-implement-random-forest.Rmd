@@ -7,6 +7,7 @@ categories:
 tags:
   - Statistical Learning
   - machine learning
+draft: true
 ---
 
 I've been playing with many different machine/statistical learning models for quite some time and I think I'm now at a point where if I want to keep improving my skills/understanding to the next level, I really need to implement these algorithms from scratch myself. 
