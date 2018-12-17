@@ -66,13 +66,12 @@ options(&quot;digits&quot;)
 <h2>Part 2</h2>
 <p><code>sys.on.exit</code> is a useful function that allows us to peek into what’s registered at any point in time:</p>
 <pre class="r"><code>test.sys.on.exit &lt;- function() {
-
   on.exit(print(1))
   ex &lt;- sys.on.exit()
   print(ex)
-
   cat(&quot;exiting...\n&quot;)
 }
+
 test.sys.on.exit()</code></pre>
 <pre><code>## print(1)
 ## exiting...

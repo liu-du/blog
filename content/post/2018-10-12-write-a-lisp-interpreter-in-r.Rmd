@@ -1,0 +1,36 @@
+---
+title: A Lisp interpreter in R, part 1
+date: '2018-10-12'
+slug: write-a-lisp-interpreter-in-r-part-1
+categories:
+  - functional programming
+  - programming
+tags:
+  - Functional Programming
+draft: true
+---
+
+> How do computer languages work? How can they understand programs and perform computation? 
+
+So, let's implement the famous computer language, Lisp, in R. Or more specifically, let's write an interpreter for lisp language in R. 
+
+Lisp stands for **Lis**t **P**rocessing. As it's name suggests, the programs written in lisp are actually lists and Lisp processes the programs (lists) and give you back an answer.
+
+An interpreter is largely comprised of two parts:
+
+- a parser, whose job is to read in a program written in that language and convert it into an __abstract syntax tree__ s, or __AST__ for short.
+- an evaluator, whose job is to evaluate __AST__, that is, run the program! 
+
+It's relatively easy to write a parser for lisp thanks to lisp's pure, simple syntax. 
+
+Now let's visualise
+```{r}
+repl <- function() {
+  repeat {
+    a <- readline(prompt = "lispr > ")
+    if (a == "exit") break
+    print(a)
+  }
+}
+```
+

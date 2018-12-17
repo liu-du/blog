@@ -70,13 +70,12 @@ This time, the function exits immediately when it sees the error, so `cat(exitin
 `sys.on.exit` is a useful function that allows us to peek into what's registered at any point in time:
 ```{r}
 test.sys.on.exit <- function() {
-
   on.exit(print(1))
   ex <- sys.on.exit()
   print(ex)
-
   cat("exiting...\n")
 }
+
 test.sys.on.exit()
 ```
 

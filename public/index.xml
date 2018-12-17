@@ -6,10 +6,32 @@
     <description>Recent content on R | Data science | Visualisation</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 25 Sep 2018 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Mon, 15 Oct 2018 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Implement Random Forest</title>
+      <link>/2018/10/15/implement-random-forest/</link>
+      <pubDate>Mon, 15 Oct 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/2018/10/15/implement-random-forest/</guid>
+      <description>I’ve been playing with many different machine/statistical learning models for quite some time and I think I’m now at a point where if I want to keep improving my skills/understanding to the next level, I really need to implement these algorithms from scratch myself.
+Random Forest is a classical machine learning algorithm and I have a feeling that it should be relatively easy to implement - it is essentially just a collection of tree models.</description>
+    </item>
+    
+    <item>
+      <title>A Lisp interpreter in R, part 1</title>
+      <link>/2018/10/12/write-a-lisp-interpreter-in-r-part-1/</link>
+      <pubDate>Fri, 12 Oct 2018 00:00:00 +0000</pubDate>
+      
+      <guid>/2018/10/12/write-a-lisp-interpreter-in-r-part-1/</guid>
+      <description>How do computer languages work? How can they understand programs and perform computation?
+ So, let’s implement the famous computer language, Lisp, in R. Or more specifically, let’s write an interpreter for lisp language in R.
+Lisp stands for List Processing. As it’s name suggests, the programs written in lisp are actually lists and Lisp processes the programs (lists) and give you back an answer.
+An interpreter is largely comprised of two parts:</description>
+    </item>
     
     <item>
       <title>Encode boolean values and operations with pure functions</title>
@@ -94,8 +116,8 @@ While there are many ways to set options, I haven’t found a summary of pros an
       <pubDate>Mon, 01 Jan 2018 00:00:00 +0000</pubDate>
       
       <guid>/about/</guid>
-      <description>I am an actuarial analyst working at Taylor Fry, Sydney. I studied actuarial science and statistics at the Australian National University.
-Inspired by Yihui, I realize I should try to write about what I&amp;rsquo;m learning - it could be an effective way to turn passive learning into active/creative thinking and consolidate my thoughts. I also hope my posts can help others as well as helping me. And I wish to connect with people who share similar passions.</description>
+      <description>I am a programming hobbyist, data science enthusiast and self-motivated learner. I&amp;rsquo;m currently working as a Data Scientist at QBE in Sydney, previously I worked as an actuarial analyst/consultant at Taylor Fry, Sydney. I studied actuarial science and statistics at the Australian National University.
+Inspired by Yihui, I realize I should try to write about what I&amp;rsquo;m learning - it could be an effective way to turn passive learning into active/creative thinking and consolidate my thoughts.</description>
     </item>
     
     <item>

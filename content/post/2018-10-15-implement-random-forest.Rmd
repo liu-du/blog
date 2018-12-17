@@ -1,0 +1,23 @@
+---
+title: Implement Random Forest
+date: '2018-10-15'
+slug: implement-random-forest
+categories:
+  - machine learning
+tags:
+  - Statistical Learning
+  - machine learning
+---
+
+I've been playing with many different machine/statistical learning models for quite some time and I think I'm now at a point where if I want to keep improving my skills/understanding to the next level, I really need to implement these algorithms from scratch myself. 
+
+Random Forest is a classical machine learning algorithm and I have a feeling that it should be relatively easy to implement - it is essentially just a collection of tree models. So as long as I can get one tree model implemented, computer should be able to take the heavy lifting and build up the random forest quite easily. So let's get started!
+
+```{r}
+a = 1
+```
+
+```{r}
+print(a)
+```
+
