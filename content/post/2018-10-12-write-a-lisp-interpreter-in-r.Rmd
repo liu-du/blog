@@ -7,7 +7,6 @@ categories:
   - programming
 tags:
   - Functional Programming
-draft: true
 ---
 
 > How do computer languages work? How can they understand programs and perform computation? 
