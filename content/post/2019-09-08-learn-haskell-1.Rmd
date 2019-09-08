@@ -1,0 +1,34 @@
+---
+title: Learn Haskell 1
+author: ''
+date: '2019-09-08'
+slug: learn-haskell-1
+categories:
+  - functional programming
+  - programming
+tags:
+  - Functional Programming
+---
+
+Learn Haskell by going through Bartosz Milewski's youtube [lectures](https://www.youtube.com/user/DrBartosz/playlists).
+
+## Lecture 1
+
+In Haskell, you don't need brackets for function application, so here's goes the classic hello-world example:
+
+```{haskell engine.path='/Users/duliu/.ghcup/bin/ghc'}
+putStrLn "Hello, world!"
+```
+
+
+This doesn't look any different to other programming languages, but the mind blowing thing is, `putStrLn` is actually not causing any _side effect_. But wait, if it doesn't cause side effect, how come it can __print__ words onto the screen? Well, it turns out that `print` takes an argument, "Hello, world!" in this case, and returns an `IO ()` which takes care of the side effecting. That is, the type of `putStrLn` is `String -> IO ()` (equivalently, `[Char] -> IO ()`).
+
+```{haskell engine.path='/Users/duliu/.ghcup/bin/ghc'}
+import Data.Dynamic
+print (dynTypeRep (toDyn putStrLn))
+```
+
+
+The "Hello, world" program we wrote so far is just pure function application, purely functional programming! Wow... I thought the first few lectures would be pretty boring as is the same with learning other languages. I was wrong, now, it looks like I'm learning some new concepts straight way... What is this `IO ()` thing? As far as I know now and I might be wrong, `IO` is a type constructor, it takes a type argument, `()` (which means `Unit` type), and returns back a type of `IO` monad. 
+
+That's all in terms of the code. And by the way, highly recommend this motivational and philosophical [video](https://www.youtube.com/watch?v=I8LbkfSSR58) by Bartosz.

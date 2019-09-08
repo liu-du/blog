@@ -1,0 +1,27 @@
+---
+title: Learn Haskell 1
+author: ''
+date: '2019-09-08'
+slug: learn-haskell-1
+categories:
+  - functional programming
+  - programming
+tags:
+  - Functional Programming
+---
+
+
+
+<p>Learn Haskell by going through Bartosz Milewski’s youtube <a href="https://www.youtube.com/user/DrBartosz/playlists">lectures</a>.</p>
+<div id="lecture-1" class="section level2">
+<h2>Lecture 1</h2>
+<p>In Haskell, you don’t need brackets for function application, so here’s goes the classic hello-world example:</p>
+<pre class="haskell"><code>putStrLn &quot;Hello, world!&quot;</code></pre>
+<pre><code>## Hello, world!</code></pre>
+<p>This doesn’t look any different to other programming languages, but the mind blowing thing is, <code>putStrLn</code> is actually not causing any <em>side effect</em>. But wait, if it doesn’t cause side effect, how come it can <strong>print</strong> words onto the screen? Well, it turns out that <code>print</code> takes an argument, “Hello, world!” in this case, and returns an <code>IO ()</code> which takes care of the side effecting. That is, the type of <code>putStrLn</code> is <code>String -&gt; IO ()</code> (equivalently, <code>[Char] -&gt; IO ()</code>).</p>
+<pre class="haskell"><code>import Data.Dynamic
+print (dynTypeRep (toDyn putStrLn))</code></pre>
+<pre><code>## [Char] -&gt; IO ()</code></pre>
+<p>The “Hello, world” program we wrote so far is just pure function application, purely functional programming! Wow… I thought the first few lectures would be pretty boring as is the same with learning other languages. I was wrong, now, it looks like I’m learning some new concepts straight way… What is this <code>IO ()</code> thing? As far as I know now and I might be wrong, <code>IO</code> is a type constructor, it takes a type argument, <code>()</code> (which means <code>Unit</code> type), and returns back a type of <code>IO</code> monad.</p>
+<p>That’s all in terms of the code. And by the way, highly recommend this motivational and philosophical <a href="https://www.youtube.com/watch?v=I8LbkfSSR58">video</a> by Bartosz.</p>
+</div>

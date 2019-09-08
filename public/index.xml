@@ -6,10 +6,21 @@
     <description>Recent content on R | Data science | Visualisation</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Mon, 15 Oct 2018 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Sun, 08 Sep 2019 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Learn Haskell 1</title>
+      <link>/2019/09/08/learn-haskell-1/</link>
+      <pubDate>Sun, 08 Sep 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/2019/09/08/learn-haskell-1/</guid>
+      <description>Learn Haskell by going through Bartosz Milewski’s youtube lectures.
+Lecture 1 In Haskell, you don’t need brackets for function application, so here’s goes the classic hello-world example:
+putStrLn &amp;quot;Hello, world!&amp;quot; ## Hello, world! This doesn’t look any different to other programming languages, but the mind blowing thing is, putStrLn is actually not causing any side effect. But wait, if it doesn’t cause side effect, how come it can print words onto the screen?</description>
+    </item>
     
     <item>
       <title>Implement Random Forest</title>
