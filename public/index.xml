@@ -23,6 +23,16 @@ putStrLn &amp;quot;Hello, world!&amp;quot; ## Hello, world! This doesn’t look 
     </item>
     
     <item>
+      <title>Learn Haskell 2</title>
+      <link>/2019/09/08/learn-haskell-2/</link>
+      <pubDate>Sun, 08 Sep 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/2019/09/08/learn-haskell-2/</guid>
+      <description>It makes sense that if some pattern/idea is used a lot, then it should be denoted with minial syntax. It follows that Haskell, famous for being functional, doesn’t even have a keyword for defining functions. To define a function, start with function name (add for example), follow by argument list separated by spaces, followed by = and then the function body:
+add x y = x + y print $ add 1 2 ## 3 Note that the $ sign seperate print and add so the compiler knows add is not an argument to print.</description>
+    </item>
+    
+    <item>
       <title>Implement Random Forest</title>
       <link>/2018/10/15/implement-random-forest/</link>
       <pubDate>Mon, 15 Oct 2018 00:00:00 +0000</pubDate>

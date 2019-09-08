@@ -1,0 +1,36 @@
+---
+title: Learn Haskell 2
+author: ''
+date: '2019-09-08'
+slug: learn-haskell-2
+categories:
+  - functional programming
+  - programming
+tags:
+  - Functional Programming
+---
+
+
+
+<p>It makes sense that if some pattern/idea is used a lot, then it should be denoted with minial syntax. It follows that Haskell, famous for being functional, doesn’t even have a keyword for defining functions. To define a function, start with function name (<code>add</code> for example), follow by argument list separated by spaces, followed by <code>=</code> and then the function body:</p>
+<pre class="haskell"><code>add x y = x + y
+print $ add 1 2</code></pre>
+<pre><code>## 3</code></pre>
+<p>Note that the <code>$</code> sign seperate <code>print</code> and <code>add</code> so the compiler knows <code>add</code> is not an argument to <code>print</code>.</p>
+<p>Functions are automatically curried, meaning that we can pass in fewer arguments and get back a more specific function.</p>
+<p>For example, if we want to define a function that adds 2 to a number, we can do: <code>add2 = add 2</code>. That is, the type of <code>add</code> is <code>Int -&gt; Int -&gt; Int</code>, or in English, <code>add</code> takes an <code>Int</code> and returns <em>a function that takes an <code>Int</code> and returns an <code>Int</code></em>. I use <code>Int</code> as a concrete example, actually the <code>add</code> we defined is polymophic in that it can also operate on <code>Double</code>, <code>Float</code> etc.</p>
+<pre class="haskell"><code>add x y = x + y
+add2 = add 2
+print $ add2 3</code></pre>
+<pre><code>## 5</code></pre>
+<p>Functions support pattern matching. For example, to calculate the distance to origin of a point, (3, 4), we can do</p>
+<pre class="haskell"><code>point = (3, 4)
+distToOrigin (x, y) = sqrt $ x^2 + y^2
+distToOrigin point</code></pre>
+<pre><code>## 5.0</code></pre>
+<p>Function composition is denoted by <code>.</code> (pronouned as “after”). For example, we can compose <code>sqrt</code> and <code>distToOriginSquared</code> to compute distance to origin:</p>
+<pre class="haskell"><code>point = (6, 8)
+distToOriginSquared (x, y) = x^2 + y^2
+distToOrigin = sqrt . distToOriginSquared
+distToOrigin point</code></pre>
+<pre><code>## 10.0</code></pre>
