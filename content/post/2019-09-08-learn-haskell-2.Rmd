@@ -1,5 +1,5 @@
 ---
-title: Learn Haskell 2
+title: "Learn Haskell 2: Function and Data Type"
 author: ''
 date: '2019-09-08'
 slug: learn-haskell-2

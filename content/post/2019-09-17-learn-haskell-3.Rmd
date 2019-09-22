@@ -1,7 +1,7 @@
 ---
-title: Learn Haskell 3
+title: "Learn Haskell 3: Algebraic Data Types"
 author: ''
-date: '2019-09-17'
+date: '2019-09-22'
 slug: learn-haskell-3
 categories:
   - functional programming
@@ -10,3 +10,25 @@ tags:
   - Functional Programming
 draft: true
 ---
+
+```{r echo=FALSE}
+knitr::opts_chunk$set(engine.path="/usr/bin/ghc")
+```
+
+A recent relevation I had is: all I'm doing when I program is just playing with __Product__ and __Sum__ types. What are them?
+
+tuple is the canonical example of the Product type:
+```{haskell}
+:t (1 :: Int, "two")
+```
+
+the name _Product_ in product type might come from set theory: if we think of integers as one set and strings as another, then we can think of a tuple of type `(Int, String)` as a __cartesian product__ of integer set and string set.
+
+We can see this in other languages as well, for example, in scala's type hierachy, [`Tuple`s inherits from `Product`](https://www.scala-lang.org/api/2.12.3/scala/Tuple2.html).
+
+`Either` is the canonical Sum type (a.k.a Coproduct).
+
+```{haskell}
+data Either a b = Left a | Right b
+
+```

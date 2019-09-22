@@ -6,22 +6,24 @@
     <description>Recent content on Data and Code</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 17 Sep 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Sun, 22 Sep 2019 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
-      <title>Learn Haskell 3</title>
-      <link>/2019/09/17/learn-haskell-3/</link>
-      <pubDate>Tue, 17 Sep 2019 00:00:00 +0000</pubDate>
+      <title>Learn Haskell 3: Algebraic Data Types</title>
+      <link>/2019/09/22/learn-haskell-3/</link>
+      <pubDate>Sun, 22 Sep 2019 00:00:00 +0000</pubDate>
       
-      <guid>/2019/09/17/learn-haskell-3/</guid>
-      <description></description>
+      <guid>/2019/09/22/learn-haskell-3/</guid>
+      <description>A recent relevation I had is: all I’m doing when I program is just playing with Product and Sum types. What are them?
+tuple is the canonical example of the Product type:
+:t (1 :: Int, &amp;quot;two&amp;quot;) ## (1 :: Int, &amp;quot;two&amp;quot;) :: (Int, [Char]) the name Product in product type might come from set theory: if we think of integers as one set and strings as another, then we can think of a tuple of type (Int, String) as a cartesian product of integer set and string set.</description>
     </item>
     
     <item>
-      <title>Learn Haskell 1</title>
+      <title>Learn Haskell 1: Hello world</title>
       <link>/2019/09/08/learn-haskell-1/</link>
       <pubDate>Sun, 08 Sep 2019 00:00:00 +0000</pubDate>
       
@@ -32,7 +34,7 @@ putStrLn &amp;quot;Hello, world!&amp;quot; ## Hello, world! This doesn’t look 
     </item>
     
     <item>
-      <title>Learn Haskell 2</title>
+      <title>Learn Haskell 2: Function and Data Type</title>
       <link>/2019/09/08/learn-haskell-2/</link>
       <pubDate>Sun, 08 Sep 2019 00:00:00 +0000</pubDate>
       
