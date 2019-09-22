@@ -11,25 +11,27 @@ tags:
 ---
 
 ```{r echo=FALSE}
-knitr::opts_chunk$set(comment="##", engine.path='/Users/duliu/.ghcup/bin/ghc')
+knitr::opts_chunk$set(engine.path="/usr/bin/ghc")
 ```
 
 
+## Part 1: function, currying, pattern matching and function composition
+
 It makes sense that if some pattern/idea is used a lot, then it should be denoted with minial syntax. It follows that Haskell, famous for being functional, doesn't even have a keyword for defining functions. To define a function, start with function name (`add` for example), follow by argument list separated by spaces, followed by `=` and then the function body:
 
-```{haskell c1}
+```{haskell}
 add x y = x + y
 print $ add 1 2
 ```
 
-Note that the `$` sign seperate `print` and `add` so the compiler knows `add` is not an argument to `print`.
+Note that the `$` sign seperate `print` and `add` so the compiler knows `add 1 2` should be treated/evaluated as one group and then the result goes into `print`.
 
 
 Functions are automatically curried, meaning that we can pass in fewer arguments and get back a more specific function. 
 
 For example, if we want to define a function that adds 2 to a number, we can do: `add2 = add 2`. That is, the type of `add` is `Int -> Int -> Int`, or in English, `add` takes an `Int` and returns _a function that takes an `Int` and returns an `Int`_. I use `Int` as a concrete example, actually the `add` we defined is polymophic in that it can also operate on `Double`, `Float` etc.
 
-```{haskell c2}
+```{haskell}
 add x y = x + y
 add2 = add 2
 print $ add2 3
@@ -38,18 +40,72 @@ print $ add2 3
 
 Functions support pattern matching. For example, to calculate the distance to origin of a point, (3, 4), we can do
 
-```{haskell c3}
-point = (3, 4)
-distToOrigin (x, y) = sqrt $ x^2 + y^2
+```{haskell}
+point = (3, 4) -- a tuple
+distToOrigin (x, y) = sqrt $ x^2 + y^2 -- pattern match the elements of tuple
 distToOrigin point
 ```
 
 Function composition is denoted by `.` (pronouned as "after"). For example, we can compose `sqrt` and `distToOriginSquared` to compute distance to origin:
 
-```{haskell c4}
+```{haskell}
 point = (6, 8)
 distToOriginSquared (x, y) = x^2 + y^2
 distToOrigin = sqrt . distToOriginSquared
 distToOrigin point
 ```
 
+## Part 2: data types
+
+We can define a type with `data` keyword, followed by the type constructor (the name of which is your choice).
+
+For example, we can defined a list type that always has at least one element:
+
+```{haskell NonEmptyList}
+data NonEmptyList a = SingletonList a | Cons a (NonEmptyList a)
+```
+
+Here, `NonEmptyList` on the left hand side (as well as right hand side) of the type definiton is an example of __type constructor__ (as it's name suggests, it constructs a __new type__), where as `SingleTonList` and `Cons` on the right hand side of the type definition are __data constructors__, they are used to construct/instantiate data of that perticular type. 
+
+I guess if you're familiar with java, python or other OOP languages, it helps to think of the __type constructor__ as class definition, e.g.: 
+```java
+public class NonEmptyList<A> {
+  ...
+}
+```
+
+whereas __data constructors__ are equivalent to the constructor methods, except that in java constructors all have to have the same name as the class, e.g.:
+```java
+public class NonEmptyList<A> {
+
+  public NonEmptyList(A a) {
+    // constructor to construct a "Singleton" NonEmptyList
+    ...
+  } 
+  
+  public NonEmptyList(A a, NonEmptyList<A> nonEmptyList) {
+    // constructor to construct a "Cons" NonEmptyList
+    ...
+  }
+  
+}
+```
+
+Back to the haskell `NonEmptyList` definition, `|` means the `NonEmptylist` is _either_ a `SingletonList` that contains a single element of type `a`, or a `Cons` that contains an element of type `a` and another element of type `NonEmptyList a` (note that `NonEmptyList a` is a type constructed by the type constructor `NonEmptyList`).
+
+With this new data type, we can safely take the head of the nonempty list, without worry about any runtime exception being throw, by pattern matching against the two cases with the __data constructor__ `SingletonList` and `Cons`:
+
+```{haskell head, ref.label=c("NonEmptyList", "head"), echo=-1}
+:{
+  head (SingletonList x) = x
+  head (Cons x _) = x    -- `_` means we don't care the value of the second parameter of the Cons
+:}
+
+aSingletonList = SingletonList 1
+head aSingletonList
+
+aComplicatedList = Cons 10 (Cons 20 (SingletonList 30))
+head aComplicatedList
+```
+
+Note that because I'm using `ghc -e` to compile the snippets (`e` stands for expression), I need to use `:{ ... :}` to tell `ghc` that the two cases of my function definition should be evaluated together, otherwise `ghc -e` will evaluate expressions line by line and throw a `Non-exhaustive patterns` exception after it evaluates the first case.

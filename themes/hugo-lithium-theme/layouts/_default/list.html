@@ -1,29 +1,34 @@
-{{ partial "header.html" . }}
+{{ if .IsHome }}
 
-<main class="content" role="main">
+  {{ with .GetPage "/post" }}{{ .Render }}{{ end }}
 
-  {{ if and .IsHome .Content }}
-  <article class="article">
-    <div class="article-content">
-      {{ .Content }}
-    </div>
-  </article>
-  {{ else }}
-  <div class="archive">
-    {{ range (where .Data.Pages "Section" "!=" "").GroupByDate "2006" }}
-    <h2 class="archive-title">{{ .Key }}</h2>
-    {{ range .Pages }}
-    <article class="archive-item">
-      <a href="{{ .RelPermalink }}" class="archive-item-link">{{ .Title }}</a>
-      <span class="archive-item-date">
-        {{ .Date.Format "2006/01/02" }}
-      </span>
+{{ else }}
+
+  {{ partial "header.html" . }}
+
+  <main class="content" role="main">
+
+    <article class="article">
+      <div class="article-content">
+        {{ .Content }}
+      </div>
     </article>
-    {{ end }}
-    {{ end }}
-  </div>
-  {{ end }}
+    <div class="archive">
+      {{ range (where .Data.Pages "Section" "!=" "").GroupByDate "2006" }}
+      <h2 class="archive-title">{{ .Key }}</h2>
+      {{ range .Pages }}
+      <article class="archive-item">
+        <a href="{{ .RelPermalink }}" class="archive-item-link">{{ .Title }}</a>
+        <span class="archive-item-date">
+          {{ .Date.Format "2006/01/02" }}
+        </span>
+      </article>
+      {{ end }}
+      {{ end }}
+    </div>
 
-</main>
+  </main>
 
-{{ partial "footer.html" . }}
+  {{ partial "footer.html" . }}
+
+{{ end }}

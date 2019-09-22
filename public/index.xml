@@ -1,15 +1,24 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>R | Data science | Visualisation</title>
+    <title>Data and Code</title>
     <link>/</link>
-    <description>Recent content on R | Data science | Visualisation</description>
+    <description>Recent content on Data and Code</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sun, 08 Sep 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Tue, 17 Sep 2019 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Learn Haskell 3</title>
+      <link>/2019/09/17/learn-haskell-3/</link>
+      <pubDate>Tue, 17 Sep 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/2019/09/17/learn-haskell-3/</guid>
+      <description></description>
+    </item>
     
     <item>
       <title>Learn Haskell 1</title>
@@ -28,8 +37,7 @@ putStrLn &amp;quot;Hello, world!&amp;quot; ## Hello, world! This doesn’t look 
       <pubDate>Sun, 08 Sep 2019 00:00:00 +0000</pubDate>
       
       <guid>/2019/09/08/learn-haskell-2/</guid>
-      <description>It makes sense that if some pattern/idea is used a lot, then it should be denoted with minial syntax. It follows that Haskell, famous for being functional, doesn’t even have a keyword for defining functions. To define a function, start with function name (add for example), follow by argument list separated by spaces, followed by = and then the function body:
-add x y = x + y print $ add 1 2 ## 3 Note that the $ sign seperate print and add so the compiler knows add is not an argument to print.</description>
+      <description>Part 1: function, currying, pattern matching and function composition It makes sense that if some pattern/idea is used a lot, then it should be denoted with minial syntax. It follows that Haskell, famous for being functional, doesn’t even have a keyword for defining functions. To define a function, start with function name (add for example), follow by argument list separated by spaces, followed by = and then the function body:</description>
     </item>
     
     <item>
@@ -137,8 +145,8 @@ While there are many ways to set options, I haven’t found a summary of pros an
       <pubDate>Mon, 01 Jan 2018 00:00:00 +0000</pubDate>
       
       <guid>/about/</guid>
-      <description>I am a programming hobbyist, data science enthusiast and self-motivated learner. I&amp;rsquo;m currently working as a data scientist at QBE in Sydney, previously I worked as an actuarial analyst/consultant at Taylor Fry. I studied actuarial science and statistics at the Australian National University.
-Inspired by Yihui, I realize I should try to write about what I&amp;rsquo;m learning - it could be an effective way to turn passive learning into active/creative thinking and consolidate my thoughts.</description>
+      <description>I am a programming hobbyist, data science/engineering enthusiast. Inspired by Yihui, I realize I should try to write about what I&amp;rsquo;m learning - it&amp;rsquo;s probably an effective way to turn passive learning into active/creative thinking and consolidate my thoughts. I also hope my posts can help others as well as helping me. And I wish to connect with people who share similar passions.
+I currently work as a Data Engineer at WooliesX, Sydney.</description>
     </item>
     
     <item>

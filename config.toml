@@ -1,6 +1,6 @@
 baseurl = "/"
 languageCode = "en-us"
-title = "R | Data science | Visualisation"
+title = "Data and Code"
 theme = "hugo-lithium-theme"
 googleAnalytics = ""
 disqusShortname = ""
@@ -24,12 +24,12 @@ hasCJKLanguage = true
     weight = 4
 
 [params]
-    description = "R, Statistics, Data Science, Machine Learning, Visualisation, Actuarial Science"
+    description = "Statistics, Data Science, Data Engineering, Software Engineering"
 
     # options for highlight.js (version, additional languages, and theme)
     highlightjsVersion = "9.11.0"
     highlightjsCDN = "//cdn.bootcss.com"
-    highlightjsLang = ["r", "yaml"]
+    highlightjsLang = ["r", "yaml", "haskell"]
     highlightjsTheme = "github"
 
     MathJaxCDN = "//cdn.bootcss.com"

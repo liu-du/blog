@@ -18,15 +18,9 @@ tags:
 <p>In Haskell, you don’t need brackets for function application, so here’s goes the classic hello-world example:</p>
 <pre class="haskell"><code>putStrLn &quot;Hello, world!&quot;</code></pre>
 <pre><code>## Hello, world!</code></pre>
-<p>This doesn’t look any different to other programming languages, but the mind blowing thing is, <code>putStrLn</code> is actually not causing any <em>side effect</em>. But wait, if it doesn’t cause side effect, how come it can <strong>print</strong> words onto the screen? Well, it turns out that <code>print</code> takes an argument, “Hello, world!” in this case, and returns an <code>IO ()</code> which takes care of the side effecting. That is, the type of <code>putStrLn</code> is <code>String -&gt; IO ()</code> (equivalently, <code>[Char] -&gt; IO ()</code>).</p>
-<pre class="haskell"><code># Haskell is statically typed with type erasure, therefore we need to use toDyn to turn them into dynamic types
-import Data.Dynamic
-print (dynTypeRep (toDyn putStrLn))</code></pre>
-<pre><code>## 
-## haskell3f2b49b4f581.txt:1:1: error: parse error on input ‘#’
-##   |
-## 1 | # Haskell is statically typed with type erasure, therefore we need to use toDyn to turn them into dynamic types
-##   | ^</code></pre>
+<p>This doesn’t look any different to other programming languages, but the mind blowing thing is, <code>putStrLn</code> is actually not causing any <em>side effect</em>. But wait, if it doesn’t cause side effect, how come it can <strong>print</strong> words onto the screen? Well, it turns out that <code>print</code> takes an argument, “Hello, world!” in this case, and returns an <code>IO ()</code> which takes care of the side effecting. That is, the type of <code>putStrLn</code> is <code>String -&gt; IO ()</code>.</p>
+<pre class="haskell"><code>:t putStrLn</code></pre>
+<pre><code>## putStrLn :: String -&gt; IO ()</code></pre>
 <p>The “Hello, world” program we wrote so far is just pure function application, purely functional programming! Wow… I thought the first few lectures would be pretty boring as is the same with learning other languages. I was wrong, now, it looks like I’m learning some new concepts straight way… What is this <code>IO ()</code> thing? As far as I know now and I might be wrong, <code>IO</code> is a type constructor, it takes a type argument, <code>()</code> (which means <code>Unit</code> type), and returns back a type of <code>IO</code> monad.</p>
 <p>That’s all in terms of the code. And by the way, highly recommend this motivational and philosophical <a href="https://www.youtube.com/watch?v=I8LbkfSSR58">video</a> by Bartosz.</p>
 </div>
