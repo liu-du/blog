@@ -4,9 +4,9 @@ init:
 
 rstudio:
 	@docker run -d -p 8787:8787 -p 4321:4321 -e PASSWORD=pw --name my_rstudio \
-	-v $(shell pwd):/home/rstudio/blog \
-	-v $(HOME)/.ssh:/home/rstudio/.ssh \
-	-v $(HOME)/.rstudio-desktop/monitored/user-settings:/home/rstudio/.rstudio/monitored/user-settings \
+	-v $(shell pwd):/home/rstudio/blog:consistent \
+	-v $(HOME)/.ssh:/home/rstudio/.ssh:consistent \
+	-v $(shell pwd)/blog-container/user-settings:/home/rstudio/.rstudio/monitored/user-settings/user-settings:consistent \
 	duliu/r-env && \
 	echo "Rstudio available at http://localhost:8787. Username: rstudio, Password: pw"
 
