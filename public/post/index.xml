@@ -6,20 +6,31 @@
     <description>Recent content in Posts on Data and Code</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sun, 22 Sep 2019 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Sun, 29 Sep 2019 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/post/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
-      <title>Learn Haskell 3: Algebraic Data Types</title>
-      <link>/2019/09/22/learn-haskell-3/</link>
-      <pubDate>Sun, 22 Sep 2019 00:00:00 +0000</pubDate>
+      <title>Learn Haskell 4: class</title>
+      <link>/2019/09/29/learn-haskell-4-class/</link>
+      <pubDate>Sun, 29 Sep 2019 00:00:00 +0000</pubDate>
       
-      <guid>/2019/09/22/learn-haskell-3/</guid>
-      <description>A recent relevation I had is: all I’m doing when I program is just playing with Product and Sum types. What are them?
-tuple is the canonical example of the Product type:
-:t (1 :: Int, &amp;quot;two&amp;quot;) ## (1 :: Int, &amp;quot;two&amp;quot;) :: (Int, [Char]) the name Product in product type might come from set theory: if we think of integers as one set and strings as another, then we can think of a tuple of type (Int, String) as a cartesian product of integer set and string set.</description>
+      <guid>/2019/09/29/learn-haskell-4-class/</guid>
+      <description>We can see this in other languages as well, for example, in scala’s type hierachy, Tuples inherits from Product.
+Either is the canonical Sum type (a.k.a Coproduct).
+data Either a b = Left a | Right b Part 2: Class This is similar to inheritance in OOP. Similar to java interface
+data Tree a = Empty | Node (Tree a) a (Tree a) deriving Show :{ class MyFunctor f where fmap :: (a -&amp;gt; b) -&amp;gt; f a -&amp;gt; f b instance MyFunctor Tree where fmap _ Empty = Empty fmap f (Node l m r) = Node (fmap f l) (f m) (fmap f r) :} tree = Node (Node Empty 1 Empty) 2 Empty fmap (* 2) tree  ## Node (Node Empty 2 Empty) 4 Empty functions are containers, e.</description>
+    </item>
+    
+    <item>
+      <title>Learn Haskell 3: Algebraic Data Types</title>
+      <link>/2019/09/28/learn-haskell-3/</link>
+      <pubDate>Sat, 28 Sep 2019 00:00:00 +0000</pubDate>
+      
+      <guid>/2019/09/28/learn-haskell-3/</guid>
+      <description>A recent revelation I had is: all I’m doing when I program is just manipulating Algebraic Data Types.
+What are algebraic data types? they are simply data types that you can do algebra with them. The most basic algebra, aka high school algebra, are addition and multiplication. Instead of doing algebra on numbers, we can also do algebra on types and the resulting types are called algebraic data types. The two fundamental algebraic data types are Sum type which corresponds to “adding” two types, and Product type which corresponds to “multiplying” two types.</description>
     </item>
     
     <item>
@@ -28,9 +39,9 @@ tuple is the canonical example of the Product type:
       <pubDate>Sun, 08 Sep 2019 00:00:00 +0000</pubDate>
       
       <guid>/2019/09/08/learn-haskell-1/</guid>
-      <description>Learn Haskell by going through Bartosz Milewski’s youtube lectures.
+      <description>--- title: &#34;Learn Haskell 1: Hello world&#34; author: &#39;&#39; date: &#39;2019-09-08&#39; slug: learn-haskell-1 categories: - functional programming - programming tags: - Functional Programming --- Learn Haskell by going through Bartosz Milewski’s youtube lectures.
 Lecture 1 In Haskell, you don’t need brackets for function application, so here’s goes the classic hello-world example:
-putStrLn &amp;quot;Hello, world!&amp;quot; ## Hello, world! This doesn’t look any different to other programming languages, but the mind blowing thing is, putStrLn is actually not causing any side effect. But wait, if it doesn’t cause side effect, how come it can print words onto the screen?</description>
+putStrLn &amp;quot;Hello, world!&amp;quot; ## Hello, world! This doesn’t look any different to other programming languages, but the mind blowing thing is, putStrLn is actually not causing any side effect.</description>
     </item>
     
     <item>
@@ -39,7 +50,7 @@ putStrLn &amp;quot;Hello, world!&amp;quot; ## Hello, world! This doesn’t look 
       <pubDate>Sun, 08 Sep 2019 00:00:00 +0000</pubDate>
       
       <guid>/2019/09/08/learn-haskell-2/</guid>
-      <description>Part 1: function, currying, pattern matching and function composition It makes sense that if some pattern/idea is used a lot, then it should be denoted with minial syntax. It follows that Haskell, famous for being functional, doesn’t even have a keyword for defining functions. To define a function, start with function name (add for example), follow by argument list separated by spaces, followed by = and then the function body:</description>
+      <description>Part 1: function, currying, pattern matching and function composition It makes sense that if some pattern/idea is used a lot, then it should be denoted with minial syntax. It follows that Haskell, famous for being functional, doesn’t even have a keyword for defining functions. To define a function, start with function name (add for example), followed by argument list separated by spaces, followed by = and then the function body:</description>
     </item>
     
     <item>

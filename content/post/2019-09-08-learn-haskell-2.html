@@ -14,7 +14,7 @@ tags:
 
 <div id="part-1-function-currying-pattern-matching-and-function-composition" class="section level2">
 <h2>Part 1: function, currying, pattern matching and function composition</h2>
-<p>It makes sense that if some pattern/idea is used a lot, then it should be denoted with minial syntax. It follows that Haskell, famous for being functional, doesn’t even have a keyword for defining functions. To define a function, start with function name (<code>add</code> for example), follow by argument list separated by spaces, followed by <code>=</code> and then the function body:</p>
+<p>It makes sense that if some pattern/idea is used a lot, then it should be denoted with minial syntax. It follows that Haskell, famous for being functional, doesn’t even have a keyword for defining functions. To define a function, start with function name (<code>add</code> for example), followed by argument list separated by spaces, followed by <code>=</code> and then the function body:</p>
 <pre class="haskell"><code>add x y = x + y
 print $ add 1 2</code></pre>
 <pre><code>## 3</code></pre>
@@ -42,12 +42,12 @@ distToOrigin point</code></pre>
 <p>We can define a type with <code>data</code> keyword, followed by the type constructor (the name of which is your choice).</p>
 <p>For example, we can defined a list type that always has at least one element:</p>
 <pre class="haskell"><code>data NonEmptyList a = SingletonList a | Cons a (NonEmptyList a)</code></pre>
-<p>Here, <code>NonEmptyList</code> on the left hand side (as well as right hand side) of the type definiton is an example of <strong>type constructor</strong> (as it’s name suggests, it constructs a <strong>new type</strong>), where as <code>SingleTonList</code> and <code>Cons</code> on the right hand side of the type definition are <strong>data constructors</strong>, they are used to construct/instantiate data of that perticular type.</p>
+<p>Here, <code>NonEmptyList</code> on the left hand side (as well as right hand side) of the type definiton is an example of <strong>type constructor</strong> (as it’s name suggests, it constructs a <strong>new type</strong>), where as <code>SingletonList</code> and <code>Cons</code> on the right hand side of the type definition are <strong>data constructors</strong>, they are used to construct/instantiate data of that perticular type.</p>
 <p>I guess if you’re familiar with java, python or other OOP languages, it helps to think of the <strong>type constructor</strong> as class definition, e.g.:</p>
 <pre class="java"><code>public class NonEmptyList&lt;A&gt; {
   ...
 }</code></pre>
-<p>whereas <strong>data constructors</strong> are equivalent to the constructor methods, except that in java constructors all have to have the same name as the class, e.g.:</p>
+<p>whereas <strong>data constructors</strong> are equivalent to the constructor methods, except that in java constructors all have to have the same name as the class. e.g.:</p>
 <pre class="java"><code>public class NonEmptyList&lt;A&gt; {
 
   public NonEmptyList(A a) {
@@ -61,6 +61,7 @@ distToOrigin point</code></pre>
   }
   
 }</code></pre>
+<p>Another similarity between data constructors in haskell and constructor methods in other languages (java) is that they are both functions: constructor in java is just a function that takes some arguments and returns/instantiates a concrete instance of the class, data constructors in haskell also return a value of different type.</p>
 <p>Back to the haskell <code>NonEmptyList</code> definition, <code>|</code> means the <code>NonEmptylist</code> is <em>either</em> a <code>SingletonList</code> that contains a single element of type <code>a</code>, or a <code>Cons</code> that contains an element of type <code>a</code> and another element of type <code>NonEmptyList a</code> (note that <code>NonEmptyList a</code> is a type constructed by the type constructor <code>NonEmptyList</code>).</p>
 <p>With this new data type, we can safely take the head of the nonempty list, without worry about any runtime exception being throw, by pattern matching against the two cases with the <strong>data constructor</strong> <code>SingletonList</code> and <code>Cons</code>:</p>
 <pre class="haskell"><code>:{

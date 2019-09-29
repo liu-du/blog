@@ -1,24 +1,75 @@
 ---
 title: "Learn Haskell 3: Algebraic Data Types"
 author: ''
-date: '2019-09-22'
+date: '2019-09-28'
 slug: learn-haskell-3
 categories:
   - functional programming
   - programming
 tags:
   - Functional Programming
-draft: true
 ---
 
 
 
-<p>A recent relevation I had is: all I’m doing when I program is just playing with <strong>Product</strong> and <strong>Sum</strong> types. What are them?</p>
-<p>tuple is the canonical example of the Product type:</p>
-<pre class="haskell"><code>:t (1 :: Int, &quot;two&quot;)</code></pre>
-<pre><code>## (1 :: Int, &quot;two&quot;) :: (Int, [Char])</code></pre>
-<p>the name <em>Product</em> in product type might come from set theory: if we think of integers as one set and strings as another, then we can think of a tuple of type <code>(Int, String)</code> as a <strong>cartesian product</strong> of integer set and string set.</p>
-<p>We can see this in other languages as well, for example, in scala’s type hierachy, <a href="https://www.scala-lang.org/api/2.12.3/scala/Tuple2.html"><code>Tuple</code>s inherits from <code>Product</code></a>.</p>
-<p><code>Either</code> is the canonical Sum type (a.k.a Coproduct).</p>
-<pre class="haskell"><code>data Either a b = Left a | Right b
-</code></pre>
+<p>A recent <strong>revelation</strong> I had is: all I’m doing when I program is just manipulating <strong>Algebraic Data Types</strong>.</p>
+<p>What are algebraic data types? they are simply data types that you can do <strong>algebra</strong> with them. The most basic algebra, aka high school algebra, are <strong>addition</strong> and <strong>multiplication</strong>. Instead of doing algebra on numbers, we can also do algebra on types and the resulting types are called <strong>algebraic</strong> data types. The two fundamental algebraic data types are <strong>Sum</strong> type which corresponds to “adding” two types, and <strong>Product</strong> type which corresponds to “multiplying” two types.</p>
+<div id="part-1-sum-aka-coproduct" class="section level2">
+<h2>Part 1: Sum (aka Coproduct)</h2>
+<p>If we think of types as sets of values, then a <strong>Sum</strong> type corresponds to the <strong>union</strong> of two types. In set theory, if we take two completely different sets, one has 5 elements and the other has 10, then the union of these two sets have <code>5 + 10 = 15</code> elements. What does this corresponds to in types? And what is a good example of a <strong>Sum</strong> type?</p>
+<p>Well, if we think of <code>True</code> as a type/set, i.e., a singleton set that only has one element called <code>True</code>, and <code>False</code> as another type/set, i.e., a singleton set that only has one element caleed <code>False</code>, then <code>Bool</code> is actually a <strong>Sum</strong> type! <code>Bool</code> has 2 possible values, <code>True</code> and <code>False</code> which is exactly the union of the two singlton sets, the <code>True</code> set and the <code>False</code> set. The number of elements, as expected from set theory, is 1 + 1 = 2.</p>
+<p>Actually, if we think of the <strong>sum</strong> type this way, all types are sum types. Integers are sum of all individual integers, Strings are sum of all possible strings:</p>
+<pre class="haskell"><code>data Bool = True | False
+data Integer = 1 | 2 | 3 | ...
+data String = &quot;&quot; | &quot;a&quot; | &quot;b&quot; | ... | &quot;aa&quot; | &quot;ab&quot; | ...</code></pre>
+<p>Of course, this is not how these primitive types are implemented in haskell, but at least conceptually, they are sums/unions of lots of different singleton sets.</p>
+<p>A more classic example of a sum type is <strong><code>Maybe a</code></strong> (i.e. <strong><code>Option[A]</code></strong> in scala). For example, <code>Maybe Char</code> is a union of set <code>Char</code> and the singleton set <code>Nothing</code>. That is, an elemnt of type <code>Maybe Char</code> is either <code>Just Char</code> (128 possible values) or <code>Nothing</code> (1 possible value). So, <code>Maybe Char</code> has <code>128 + 1 = 129</code> possible values which is how many elements a union is supposed to have.</p>
+<p>In fact, in languages that have <code>null</code>, it just feels like all non-primitive types are <code>Maybe</code> types! For example in java/scala, although the type signiture tells you that a variable is of type <code>Boolean</code>, but because <code>null</code> can appear anywhere, the variable can actually also be <code>null</code>! That is, when the compiler tells you it’s a <code>Boolean</code>, it’s actually not a <code>Boolean</code>, it maybe is a <code>Boolean</code>…</p>
+<p>Would you write all your methods starting with checking if arguments are null? That’s probably why <code>null</code> frustrates people and causes lot’s of runtime null pointer exceptions. I think it’s because programmers are only given <code>Maybe</code> types and there’s no way to get a “pure” type in those languages, well, except those primitive types…</p>
+<p>Another example of a sum type, in OOP, is subclasses! Say there is a class called <code>Animal</code> and two subclasses <code>Dog</code> and <code>Cat</code>, then in the code where the type signiture tells us it’s an animal, we know that it can either be a dog or a cat.</p>
+<p>(More precisely, the sum type corresponds to <strong>tagged unions</strong>.)</p>
+</div>
+<div id="part-2-product" class="section level2">
+<h2>Part 2: Product</h2>
+<p>Let’s still think of <strong>types</strong> as <strong>sets</strong>. As discussed before, the <strong>Bool</strong> type is a set of two elements/values, <code>True</code> and <code>False</code>. The <strong>Char</strong> type is a set of 128 elements/values (suppose Char is restricted to ascii characters). We can represent the <strong>cartesian product</strong> of these two sets/types as a pair <code>(Bool, Char)</code>. This new type, <code>(Bool, Char)</code>, has 256 elements: the first component of the pair has 2 possible values, <code>True</code> and <code>False</code>, and the second component has 128 possible values. Therefore the pair has 2 * 128 = 256 possible values, which is exactly the number of elements that the cartesian product is meant to have. This <strong>pair</strong> type, aka <strong>tuple</strong> in other languages, is a classic example of a <strong>Product</strong> type. It represents the cartesian product of two types.</p>
+<p>What else are also product types? Well, <strong>records</strong> (aka <strong>dictionary</strong>) are also <strong>Proudct</strong>. The only difference it has with the pair type is how the componenets are named. For a pair, the components are named as as <code>fst</code> and <code>snd</code> in haskell, <code>_1</code>, <code>_2</code> in scala, <code>[0]</code>, <code>[1]</code> in python, whereas records/dictionaries are named using some user-defined names. Really, this is a superficial difference.</p>
+<p>What’s more revealing is that, if you think about it, a (immutable) <strong>class</strong> in an OOP language is in essence also a <strong>Product</strong> type! They are just like records or dictionaries, the components of the product are memeber variables (aka, fields, instance variables, etc) and methods. Actually, this type of <strong>Product</strong> (products with with custom names and functions), is so useful that scala has a special syntax for them: <code>case class</code>. In fact, all case classes automatically extend <strong>Product</strong> in scala.</p>
+</div>
+<div id="part-3-sum-and-product" class="section level2">
+<h2>Part 3: Sum and Product</h2>
+<p>with addition and multiplication, we can actually do some simple algebra already. <strong>List</strong>, perhaps not surprisingly, is simply the result of performing a few simple additions and multiplications on some generic type. The classic definition of a list is as follows:</p>
+<pre class="haskell"><code>data List a = Nil | Pair a (List a)</code></pre>
+<p>It’s a recursive definition, which basically says that <code>List a</code> is either <code>Nil</code> (empty list) or it’s a pair whose first element is of type <code>a</code> and the second element is another <code>List a</code>. If we translate this into the “type algebra”, it’s something like this:</p>
+<p><span class="math display">\[
+\begin{align}
+List(a) = Nil + a \times List(a) 
+\end{align}
+\]</span></p>
+<p>Well, we have one equation and one unkown - <span class="math inline">\(List(a)\)</span>, maybe we can try to solve for it:</p>
+<p><span class="math display">\[
+\begin{align}
+List(a) 
+&amp; = Nil + a \times List(a) \\
+&amp; = Nil + a \times (Nil + a \times List(a)) \\
+&amp; = Nil + a \times Nil + a \times a \times List(a) \\
+&amp; = Nil + a \times Nil + a \times a \times (Nil + a \times List(a)) \\
+&amp; = Nil + a \times Nil + a \times a \times Nil + a \times a \times List(a) \\
+&amp; = Nil + a \times Nil + a \times a \times Nil + a \times a \times a \times List(a) \\
+&amp; = ... \\
+&amp; = \sum_{i=0}^\infty{ a^i \times Nil }
+\end{align}
+\]</span></p>
+<p>Wow, the resulting equation perhaps reveals more substance of a list: a list contains either 0 element of type a and <code>Nil</code> (<span class="math inline">\(a^0 \times Nil\)</span>), or 1 element of type a and Nil (<span class="math inline">\(a^1 \times Nil\)</span>), or 2 elements of type a and Nil (<span class="math inline">\(a^2 \times Nil\)</span>), or 3 elements of type a and Nil, and so on… Looks like distributive law of high school algebra also applies to type algebra…</p>
+</div>
+<div id="part-4-exponential" class="section level2">
+<h2>Part 4: Exponential</h2>
+<p>So, now we’ve established that pretty much any data types I use when I do any sort of programming, from primitive types like integer, boolean, to more complex types like pair (tuple), Maybe (Option), list, to user defined data types like <code>case class</code> or subclasses, <strong>they are all algebraic data types</strong>!!! That is, they are simply some algebra on primitive types! I feel in some sense, when I program in a functional style (no mutability), all I’m doing is simply algebra, algebra on numbers and on types.</p>
+<p>There’s one thing that’s omitted here - functions. Can functions also fit in to this story of doing algebra? aren’t they some different beasts altogether? Well, it turns out that they are called exponentials in category theory. Here’s why from a layman’s perspective:</p>
+<p>Let’s say a function is of type <code>Bool -&gt; Char</code>. Let’s still think of types as sets, so in this case, one of the possible elements in the set <code>Bool -&gt; Char</code> is:</p>
+<pre class="haskell"><code>myFunction b = if b then &#39;a&#39; else &#39;b&#39;
+:t myFunction</code></pre>
+<pre><code>## myFunction :: Bool -&gt; Char</code></pre>
+<p><code>myFunction</code> takes a Bool <code>b</code> and returns <code>'a'</code> if <code>b</code> is <code>True</code> or <code>'b'</code> if <code>b</code> is <code>False</code>. How many distinct such functions can there possibly be? That is, how many elements are there in the set <code>Bool -&gt; Char</code>?</p>
+<p>Well, if <code>b</code> is <code>True</code>, a function can return 128 possible values and if <code>b</code> is <code>False</code>, there’re also <code>128</code> possible return values. So in total, we have <span class="math inline">\(128 \times 128 = 128^2\)</span> such functions in the set of <code>Bool -&gt; Char</code>. In category theory, mathamaticians call these types exponentials, <span class="math inline">\(Char^{Bool}\)</span>.</p>
+<p>Actually, the boundary of functions and values are sort of blurred, in one of the previous <a href="/2018/09/25/encode-boolean-and-logical-operations-with-pure-functions/">post</a>, we can use functions to implement boolean values.</p>
+</div>

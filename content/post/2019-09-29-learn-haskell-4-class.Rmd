@@ -1,0 +1,87 @@
+---
+title: 'Learn Haskell 4: class'
+author: ''
+date: '2019-09-29'
+slug: learn-haskell-4-class
+categories:
+  - functional programming
+  - programming
+tags:
+  - Functional Programming
+draft: true
+---
+
+```{r echo=FALSE}
+knitr::opts_chunk$set(engine.path="/usr/local/bin/ghc")
+```
+
+We can see this in other languages as well, for example, in scala's type hierachy, [`Tuple`s inherits from `Product`](https://www.scala-lang.org/api/2.12.3/scala/Tuple2.html).
+
+`Either` is the canonical Sum type (a.k.a Coproduct).
+
+```{haskell}
+data Either a b = Left a | Right b
+```
+
+
+## Part 2: Class
+
+This is similar to inheritance in OOP. Similar to java interface
+
+```{haskell}
+data Tree a = Empty | Node (Tree a) a (Tree a) deriving Show
+
+:{
+  class MyFunctor f where
+    fmap :: (a -> b) -> f a -> f b
+  
+  instance MyFunctor Tree where
+    fmap _ Empty = Empty
+    fmap f (Node l m r) = Node (fmap f l) (f m) (fmap f r)
+:}
+
+tree = Node (Node Empty 1 Empty) 2 Empty
+fmap (* 2) tree
+
+```
+
+
+functions are containers, e.g., Reader Functor
+```{haskell}
+data Reader e a = Reader (e -> a)
+
+:{
+  class MyFunctor f where
+    fmap :: (a -> b) -> f a -> f b
+  
+  instance MyFunctor (Reader e) where
+    fmap g (Reader f) = Reader (g . f)
+:}
+```
+
+```haskell
+class Functor m => class Monad m where
+  return :: a -> m a
+  (>=>) :: (a -> m b) -> (b -> mc) -> (a -> mc)
+
+  
+class Functor m => class Monad m where
+  return :: a -> m a
+  (>>=) :: m a -> (a -> m b) -> m b
+  -- define fish in terms of bind:
+  -- (>=>) f g = \a = (>>=) (f a) g    
+  -- orrrr:  (\x (>>=) x g)  . f
+  
+```
+
+
+do notation
+```haskell
+safeSqrt x = if x < 0 then Left "x<0" else return (sqrt x)
+safeRecSqrt x = safeSqrt x >>= (\y -> if y==0 then Left "div by 0" else return (1/y))
+
+safeRecSqrt2 x = do
+  y <- safeSqrt x
+  if y == 0 then Left "div by 0" else return (1/y) 
+```
+

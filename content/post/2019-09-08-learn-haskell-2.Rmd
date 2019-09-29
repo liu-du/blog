@@ -11,13 +11,12 @@ tags:
 ---
 
 ```{r echo=FALSE}
-knitr::opts_chunk$set(engine.path="/usr/bin/ghc")
+knitr::opts_chunk$set(engine.path="/usr/local/bin/ghc")
 ```
-
 
 ## Part 1: function, currying, pattern matching and function composition
 
-It makes sense that if some pattern/idea is used a lot, then it should be denoted with minial syntax. It follows that Haskell, famous for being functional, doesn't even have a keyword for defining functions. To define a function, start with function name (`add` for example), follow by argument list separated by spaces, followed by `=` and then the function body:
+It makes sense that if some pattern/idea is used a lot, then it should be denoted with minial syntax. It follows that Haskell, famous for being functional, doesn't even have a keyword for defining functions. To define a function, start with function name (`add` for example), followed by argument list separated by spaces, followed by `=` and then the function body:
 
 ```{haskell}
 add x y = x + y
@@ -65,16 +64,18 @@ For example, we can defined a list type that always has at least one element:
 data NonEmptyList a = SingletonList a | Cons a (NonEmptyList a)
 ```
 
-Here, `NonEmptyList` on the left hand side (as well as right hand side) of the type definiton is an example of __type constructor__ (as it's name suggests, it constructs a __new type__), where as `SingleTonList` and `Cons` on the right hand side of the type definition are __data constructors__, they are used to construct/instantiate data of that perticular type. 
+Here, `NonEmptyList` on the left hand side (as well as right hand side) of the type definiton is an example of __type constructor__ (as it's name suggests, it constructs a __new type__), where as `SingletonList` and `Cons` on the right hand side of the type definition are __data constructors__, they are used to construct/instantiate data of that perticular type. 
 
 I guess if you're familiar with java, python or other OOP languages, it helps to think of the __type constructor__ as class definition, e.g.: 
+
 ```java
 public class NonEmptyList<A> {
   ...
 }
 ```
 
-whereas __data constructors__ are equivalent to the constructor methods, except that in java constructors all have to have the same name as the class, e.g.:
+whereas __data constructors__ are equivalent to the constructor methods, except that in java constructors all have to have the same name as the class. e.g.:
+
 ```java
 public class NonEmptyList<A> {
 
@@ -90,6 +91,8 @@ public class NonEmptyList<A> {
   
 }
 ```
+
+Another similarity between data constructors in haskell and constructor methods in other languages (java) is that they are both functions: constructor in java is just a function that takes some arguments and returns/instantiates a concrete instance of the class, data constructors in haskell also return a value of different type. 
 
 Back to the haskell `NonEmptyList` definition, `|` means the `NonEmptylist` is _either_ a `SingletonList` that contains a single element of type `a`, or a `Cons` that contains an element of type `a` and another element of type `NonEmptyList a` (note that `NonEmptyList a` is a type constructed by the type constructor `NonEmptyList`).
 

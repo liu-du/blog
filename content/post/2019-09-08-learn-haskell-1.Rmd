@@ -16,14 +16,13 @@ Learn Haskell by going through Bartosz Milewski's youtube [lectures](https://www
 
 In Haskell, you don't need brackets for function application, so here's goes the classic hello-world example:
 
-```{haskell engine.path='/usr/bin/ghc'}
+```{haskell engine.path='/usr/local/bin/ghc'}
 putStrLn "Hello, world!"
 ```
 
-
 This doesn't look any different to other programming languages, but the mind blowing thing is, `putStrLn` is actually not causing any _side effect_. But wait, if it doesn't cause side effect, how come it can __print__ words onto the screen? Well, it turns out that `print` takes an argument, "Hello, world!" in this case, and returns an `IO ()` which takes care of the side effecting. That is, the type of `putStrLn` is `String -> IO ()`.
 
-```{haskell engine.path='/usr/bin/ghc'}
+```{haskell engine.path='/usr/local/bin/ghc'}
 :t putStrLn
 ```
 

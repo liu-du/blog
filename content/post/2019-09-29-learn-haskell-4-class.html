@@ -1,0 +1,66 @@
+---
+title: 'Learn Haskell 4: class'
+author: ''
+date: '2019-09-29'
+slug: learn-haskell-4-class
+categories:
+  - functional programming
+  - programming
+tags:
+  - Functional Programming
+draft: true
+---
+
+
+
+<p>We can see this in other languages as well, for example, in scala’s type hierachy, <a href="https://www.scala-lang.org/api/2.12.3/scala/Tuple2.html"><code>Tuple</code>s inherits from <code>Product</code></a>.</p>
+<p><code>Either</code> is the canonical Sum type (a.k.a Coproduct).</p>
+<pre class="haskell"><code>data Either a b = Left a | Right b</code></pre>
+<div id="part-2-class" class="section level2">
+<h2>Part 2: Class</h2>
+<p>This is similar to inheritance in OOP. Similar to java interface</p>
+<pre class="haskell"><code>data Tree a = Empty | Node (Tree a) a (Tree a) deriving Show
+
+:{
+  class MyFunctor f where
+    fmap :: (a -&gt; b) -&gt; f a -&gt; f b
+  
+  instance MyFunctor Tree where
+    fmap _ Empty = Empty
+    fmap f (Node l m r) = Node (fmap f l) (f m) (fmap f r)
+:}
+
+tree = Node (Node Empty 1 Empty) 2 Empty
+fmap (* 2) tree
+</code></pre>
+<pre><code>## Node (Node Empty 2 Empty) 4 Empty</code></pre>
+<p>functions are containers, e.g., Reader Functor</p>
+<pre class="haskell"><code>data Reader e a = Reader (e -&gt; a)
+
+:{
+  class MyFunctor f where
+    fmap :: (a -&gt; b) -&gt; f a -&gt; f b
+  
+  instance MyFunctor (Reader e) where
+    fmap g (Reader f) = Reader (g . f)
+:}</code></pre>
+<pre class="haskell"><code>class Functor m =&gt; class Monad m where
+  return :: a -&gt; m a
+  (&gt;=&gt;) :: (a -&gt; m b) -&gt; (b -&gt; mc) -&gt; (a -&gt; mc)
+
+  
+class Functor m =&gt; class Monad m where
+  return :: a -&gt; m a
+  (&gt;&gt;=) :: m a -&gt; (a -&gt; m b) -&gt; m b
+  -- define fish in terms of bind:
+  -- (&gt;=&gt;) f g = \a = (&gt;&gt;=) (f a) g    
+  -- orrrr:  (\x (&gt;&gt;=) x g)  . f
+  </code></pre>
+<p>do notation</p>
+<pre class="haskell"><code>safeSqrt x = if x &lt; 0 then Left &quot;x&lt;0&quot; else return (sqrt x)
+safeRecSqrt x = safeSqrt x &gt;&gt;= (\y -&gt; if y==0 then Left &quot;div by 0&quot; else return (1/y))
+
+safeRecSqrt2 x = do
+  y &lt;- safeSqrt x
+  if y == 0 then Left &quot;div by 0&quot; else return (1/y) </code></pre>
+</div>
