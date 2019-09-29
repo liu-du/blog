@@ -14,16 +14,20 @@ tags:
 knitr::opts_chunk$set(engine.path="/usr/local/bin/ghc")
 ```
 
-A recent __revelation__ I had is: all I'm doing when I program is just manipulating __Algebraic Data Types__. 
+A recent __revelation__ I had is: 
 
-What are algebraic data types? they are simply data types that you can do __algebra__ with them. The most basic algebra, aka high school algebra, are __addition__ and __multiplication__. Instead of doing algebra on numbers, we can also do algebra on types and the resulting types are called __algebraic__ data types. The two fundamental algebraic data types are __Sum__ type which corresponds to "adding" two types, and __Product__ type which corresponds to "multiplying" two types.
+>__All I’m doing when I program is nothing but doing algebra - algebra on numbers and algebra on types.__
+
+Algebra on numbers are prevelant in functional programming, when we write a function, we mostly either do some algebra with the arguments, or call some other functions to do algebra for us. Afterall, functional programs are kind of like "executable mathamatics".
+
+What do I mean by "algebra on types"? Well, the algebra that I know, aka high school algebra, has __additions__ and __multiplications__ on numbers. "Doing algebra on types" simply means instead of doing additions and muliplications on numbers, we do "additions" and "multiplications" on types. Types that result from "doing algebra on types" are called __Algebraic Data Types__. The two fundamental algebraic data types are __Sum__ type which corresponds to "adding" two types, and __Product__ type which corresponds to "multiplying" two types.
 
 
 ## Part 1: Sum (aka Coproduct)
 
-If we think of types as sets of values, then a __Sum__ type corresponds to the __union__ of two types. In set theory, if we take two completely different sets, one has 5 elements and the other has 10, then the union of these two sets have `5 + 10 = 15` elements. What does this corresponds to in types? And what is a good example of a __Sum__ type? 
+If we think of types as sets of values, then a __Sum__ type corresponds to the __union__^[Actually to be more precisely, the sum type corresponds to __tagged unions__ in set theory.] of two types. In set theory, if we take two completely different sets, one has 5 elements and the other has 10, then the union of these two sets has `5 + 10 = 15` elements. What does this corresponds to in types? And what is a good example of a __Sum__ type? 
 
-Well, if we think of `True` as a type/set, i.e., a singleton set that only has one element called `True`, and `False` as another type/set, i.e., a singleton set that only has one element caleed `False`, then `Bool` is actually a __Sum__ type! `Bool` has 2 possible values, `True` and `False` which is exactly the union of the two singlton sets, the `True` set and the `False` set. The number of elements, as expected from set theory, is 1 + 1 = 2. 
+Well, if we think of `True` as a set, i.e., a singleton set that only has one element called `True`, and `False` as another set, i.e., a singleton set that only has one element called `False`, then `Bool` is actually a __Sum__ type! `Bool` is exactly the union of the two singleton sets, the `True` set and the `False` set. The number of elements in `Bool`, as expected from set theory, is 1 + 1 = 2.
 
 Actually, if we think of the __sum__ type this way, all types are sum types. Integers are sum of all individual integers, Strings are sum of all possible strings:
 
@@ -35,27 +39,22 @@ data String = "" | "a" | "b" | ... | "aa" | "ab" | ...
 
 Of course, this is not how these primitive types are implemented in haskell, but at least conceptually, they are sums/unions of lots of different singleton sets.
 
-A more classic example of a sum type is __`Maybe a`__ (i.e. __`Option[A]`__ in scala). For example, `Maybe Char` is a union of set `Char` and the singleton set `Nothing`. That is, an elemnt of type `Maybe Char` is either `Just Char` (128 possible values) or `Nothing` (1 possible value). So, `Maybe Char` has `128 + 1 = 129` possible values which is how many elements a union is supposed to have. 
+A more classic example of a sum type is __`Maybe a`__ (i.e. __`Option[A]`__ in scala). For example, `Maybe Char` is a union of set `Char` and the singleton set `Nothing`. That is, an element of type `Maybe Char` is either `Just Char` (128 possible values, suppose we restrict Char to 128 ASCII characters) or `Nothing` (1 possible value). So, `Maybe Char` has `128 + 1 = 129` possible values which is how many elements a union is supposed to have. 
 
-In fact, in languages that have `null`, it just feels like all non-primitive types are `Maybe` types! For example in java/scala, although the type signiture tells you that a variable is of type `Boolean`, but because `null` can appear anywhere, the variable can actually also be `null`! That is, when the compiler tells you it's a `Boolean`, it's actually not a `Boolean`, it maybe is a `Boolean`...
+In fact, in languages that have `null`, it just feels like all non-primitive types are `Maybe` types. For example in java/scala, although the type signature tells you that a variable is of type `Boolean`, but because `null` can appear anywhere, the variable can actually also be `null`. That is, when the compiler tells you it's a `Boolean`, it's actually not a `Boolean`, it maybe is a `Boolean`... I think that's perhaps why `null` causes lots of run-time null pointer exceptions.
 
-Would you write all your methods starting with checking if arguments are null? That's probably why `null` frustrates people and causes lot's of runtime null pointer exceptions. I think it's because programmers are only given `Maybe` types and there's no way to get a "pure" type in those languages, well, except those primitive types...
-
-Another example of a sum type, in OOP, is subclasses! Say there is a class called `Animal` and two subclasses `Dog` and `Cat`, then in the code where the type signiture tells us it's an animal, we know that it can either be a dog or a cat.
-
-
-(More precisely, the sum type corresponds to __tagged unions__.)
+Another example of a sum type that I used a lot but I'm not aware of the fact that they are sum types is subclasses in OOP languages. Say there is an abstract class/trait called `Animal` and two subclasses `Dog` and `Cat`, then in the code where the type signature tells us it's an animal, we know that it can either be a dog or a cat. That is, the set `Animal` is the union of set `Dog` and set `Cat`.
 
 
 ## Part 2: Product
 
-Let's still think of __types__ as __sets__. As discussed before, the __Bool__ type is a set of two elements/values, `True` and `False`. The  __Char__ type is a set of 128 elements/values (suppose Char is restricted to ascii characters). We can represent the __cartesian product__ of these two sets/types as a pair `(Bool, Char)`. This new type, `(Bool, Char)`, has 256 elements: the first component of the pair has 2 possible values, `True` and `False`, and the second component has 128 possible values. Therefore the pair has 2 * 128 = 256 possible values, which is exactly the number of elements that the cartesian product is meant to have. This __pair__ type, aka __tuple__ in other languages, is a classic example of a __Product__ type. It represents the cartesian product of two types. 
+Let's still think of __types__ as __sets__. As discussed before, __Bool__ is a set of two elements, `True` and `False`. __Char__ is a set of 128 elements (suppose Char is restricted to ASCII characters). We can represent the __Cartesian Product__ of these two sets as a new type which we denote as `(Bool, Char)`. This new type, `(Bool, Char)`, has 2 components: the first component is a `Bool` and it has 2 possible values, `True` and `False`, and the second component is a `Char` and it has 128 possible values. Therefore the new type has 2 * 128 = 256 possible values, which is exactly the number of elements that the Cartesian product is meant to have. This new type, usually called a __pair__ or __tuple__ depending on the language, is a classic example of a __Product__ type. It represents the Cartesian product of two types. 
 
-What else are also product types? Well, __records__ (aka __dictionary__) are also __Proudct__. The only difference it has with the pair type is how the componenets are named. For a pair, the components are named as as `fst` and `snd` in haskell, `_1`, `_2` in scala, `[0]`, `[1]` in python, whereas records/dictionaries are named using some user-defined names. Really, this is a superficial difference.
+What else are also product types? Well, __records__ (aka __dictionary__) are also __Product__. The only difference it has with the pair type is how the components are named. For a pair, the components are named as as `fst` and `snd` in haskell, `_1`, `_2` in scala, `[0]`, `[1]` in python, whereas records/dictionaries are named using some user-defined names. Really, this is a superficial difference.
 
-What's more revealing is that, if you think about it, a (immutable) __class__ in an OOP language is in essence also a __Product__ type! They are just like records or dictionaries, the components of the product are memeber variables (aka, fields, instance variables, etc) and methods. Actually, this type of __Product__ (products with with custom names and functions), is so useful that scala has a special syntax for them: `case class`. In fact, all case classes automatically extend __Product__ in scala.
+What's more revealing is that, if you think about it, a (immutable) __class__ in an OOP language is in essence also a __Product__ type! They are just like records or dictionaries, the components of the product are member variables (aka, fields, instance variables, etc) and methods. Actually, this type of __Product__ (products with with custom names and functions and without mutation), is so useful that scala has a special syntax for them: `case class`. In fact, all case classes automatically extend __Product__ in scala.
 
-## Part 3: Sum and Product
+## Part 3: Algebra on Sum and Product
 
 with addition and multiplication, we can actually do some simple algebra already. __List__, perhaps not surprisingly, is simply the result of performing a few simple additions and multiplications on some generic type. The classic definition of a list is as follows:
 
@@ -71,7 +70,7 @@ List(a) = Nil + a \times List(a)
 \end{align}
 $$
 
-Well, we have one equation and one unkown - $List(a)$, maybe we can try to solve for it:
+Well, we have one equation and one unknown - $List(a)$, maybe we can try to solve for it:
 
 $$
 \begin{align}
@@ -87,24 +86,33 @@ List(a)
 \end{align}
 $$
 
-Wow, the resulting equation perhaps reveals more substance of a list: a list contains either 0 element of type a and `Nil` ($a^0 \times Nil$), or 1 element of type a and Nil ($a^1 \times Nil$), or 2 elements of type a and Nil ($a^2 \times Nil$), or 3 elements of type a and Nil, and so on... Looks like distributive law of high school algebra also applies to type algebra...
+Wow, the resulting equation perhaps reveals more substance of a list: a list contains either no element of type a and `Nil` ($a^0 \times Nil$), or 1 element of type a and Nil ($a^1 \times Nil$), or 2 elements of type a and Nil ($a^2 \times Nil$), or 3 elements of type a and Nil, and so on... Looks like the distributive law in high school algebra also applies to type algebra...
 
 ## Part 4: Exponential
 
-So, now we've established that pretty much any data types I use when I do any sort of programming, from primitive types like integer, boolean, to more complex types like pair (tuple), Maybe (Option), list, to user defined data types like `case class` or subclasses, __they are all algebraic data types__!!! That is, they are simply some algebra on primitive types! I feel in some sense, when I program in a functional style (no mutability), all I'm doing is simply algebra, algebra on numbers and on types.
+So, now it looks like that pretty much any data type I use when I do any sort of programming, from primitive types like integers, booleans, to more complex types like pair (aka tuple), Maybe (aka Option) and list, to user defined data types like `case class` and classes in class hierachies, __they are all algebraic data types!!!__ That is, they are simply some algebra on primitive types! In some sense, when I program in a functional style (without mutation), __all I'm doing is nothing but algebra - algebra on numbers and algebra on types__.
 
-There's one thing that's omitted here - functions. Can functions also fit in to this story of doing algebra? aren't they some different beasts altogether? Well, it turns out that they are called exponentials in category theory. Here's why from a layman's perspective:
+There's one thing that's omitted here - functions. Can functions also fit in to this story of doing algebra? aren't they some different beasts altogether? Well, it turns out that they are called exponential in category theory. Here's why from a layman's perspective.
 
 Let's say a function is of type `Bool -> Char`. Let's still think of types as sets, so in this case, one of the possible elements in the set `Bool -> Char` is:
 
 ```{haskell}
 myFunction b = if b then 'a' else 'b'
 :t myFunction
+myFunction True
+myFunction False
 ```
 
-`myFunction` takes a Bool `b` and returns `'a'` if `b` is `True` or `'b'` if `b` is `False`. How many distinct such functions can there possibly be? That is, how many elements are there in the set `Bool -> Char`?
+`myFunction` takes a Bool `b` and returns `'a'` if the argument is `True` or `'b'` if it is `False`. How many distinct such functions can there possibly be? That is, how many elements are there in the set `Bool -> Char`?
 
-Well, if `b` is `True`, a function can return 128 possible values and if `b` is `False`, there're also `128` possible return values. So in total, we have $128 \times 128 = 128^2$ such functions in the set of `Bool -> Char`. In category theory, mathamaticians call these types exponentials, $Char^{Bool}$.
+Again let's suppose `Char` is ASCII character and it has only 128 elements. When `b` is `True`, there're 128 different functions, one for each of the 128 possible ASCII characters; when `b` is `False`, there're also `128` different functions that each return different ASCII characters. So in total, we have $128 \times 128 = 128^2$ such functions in the set of `Bool -> Char`. In category theory, mathematicians call this type an __Exponential__, denoted as $Char^{Bool}$. And it sort of describes the cardinality of the type.
 
-Actually, the boundary of functions and values are sort of blurred, in one of the previous [post](/2018/09/25/encode-boolean-and-logical-operations-with-pure-functions/), we can use functions to implement boolean values.
+So, the boundary between __function types__ and __data types__ are sort of blurred from the point of view of catgegory theory. 
 
+Actually, the boundary between _function_ and _data_ is also sort of blurred. We can think of functions as a lookup table that stores the data. Unlike elements in a data type which are themselves data, elements in a function type, i.e. a function, is like a database, we need to give it an argument, or a query, in order to get some value back.
+
+Also, in one of the previous [post](/2018/09/25/encode-boolean-and-logical-operations-with-pure-functions/), we can actually use pure functions to implement boolean values.
+
+## Conclusion
+
+That's my recent revelation. I don't know where it will lead me to lol.

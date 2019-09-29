@@ -29,8 +29,10 @@ data Tree a = Empty | Node (Tree a) a (Tree a) deriving Show :{ class MyFunctor 
       <pubDate>Sat, 28 Sep 2019 00:00:00 +0000</pubDate>
       
       <guid>/2019/09/28/learn-haskell-3/</guid>
-      <description>A recent revelation I had is: all I’m doing when I program is just manipulating Algebraic Data Types.
-What are algebraic data types? they are simply data types that you can do algebra with them. The most basic algebra, aka high school algebra, are addition and multiplication. Instead of doing algebra on numbers, we can also do algebra on types and the resulting types are called algebraic data types. The two fundamental algebraic data types are Sum type which corresponds to “adding” two types, and Product type which corresponds to “multiplying” two types.</description>
+      <description>A recent revelation I had is:
+ All I’m doing when I program is nothing but doing algebra - algebra on numbers and algebra on types.
+ Algebra on numbers are prevelant in functional programming, when we write a function, we mostly either do some algebra with the arguments, or call some other functions to do algebra for us. Afterall, functional programs are kind of like “executable mathamatics”.
+What do I mean by “algebra on types”?</description>
     </item>
     
     <item>
